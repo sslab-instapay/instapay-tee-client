@@ -1,0 +1,75 @@
+{{ define "closedChannel.tmpl" }}
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <title>InstaPay client app</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    </head>
+    <body>
+
+    {{template "comm_navbar.html"}}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Channels</h3>
+                    </div>
+                    {{template "channel_menu.html"}}
+                </div>
+            </div>
+            <div class="col-md-10">
+                <h1>Closed channels</h1>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>CID</th>
+                        <th>My address</th>
+                        <th>Other's address</th>
+                        <th>Detail</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{ range $i, $closedChannel := .closedChannelList }}
+                        <tr>
+                            <td>{{ $closedChannel.ChannelId }}</td>
+                            <td>{{ $closedChannel.MyAddress }}</td>
+                            <td>{{ $closedChannel.OtherAddress }}</td>
+                            <td>
+                                <button type="button" id="detail_modal" class="btn btn-light" data-toggle="modal"
+                                        data-target="#modal{{$i}}">detail
+                                </button>
+                            </td>
+                        </tr>
+                        <div class="modal" id="modal{{$i}}">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h4 class="modal-title">Detail request information</h4>
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="font-weight-bold">My deposit: {{ $closedChannel.MyDeposit }}</p>
+                                        <p class="font-weight-bold">My balance: {{ $closedChannel.MyBalance }} </p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {{ end }}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    </body>
+    </html>
+{{ end }}

@@ -1,0 +1,49 @@
+{{ define "openChannel.tmpl" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>InstaPay client app</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+{{template "comm_navbar.html"}}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Channels</h3>
+                </div>
+                {{template "channel_menu.html"}}
+            </div>
+        </div>
+        <div class="col-md-10">
+            <h1>Request to open a channel</h1>
+            <form method="post" action="/channels/requests/open">
+                <div class="form-group">
+                    <label for="my_addr">My address to use:</label>
+                    <input type="text" class="form-control" id="my_addr" name="my_addr" value={{ .account.PublicKeyAddress }}>
+                </div>
+                <div class="form-group">
+                    <label for="other_addr">Other's address:</label>
+                    <input type="text" class="form-control" id="other_addr" name="other_addr">
+                </div>
+                <div class="form-group">
+                    <label for="deposit">Deposit:</label>
+                    <input type="text" class="form-control" id="deposit" name="deposit">
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+{{ end }}

@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+service Client {
+    rpc agreementRequest(AgreeRequestsMessage) returns (Result) {}
+    rpc updateRequest(UpdateRequestsMessage) returns (Result) {}
+    rpc confirmPayment(ConfirmRequestsMessage) returns (Result) {}
+}
+
+message AgreeRequestsMessage {
+    int64 paymentNumber = 1;
+    ChannelPayments channelPayments = 2;
+}
+
+message UpdateRequestsMessage{
+    int64 paymentNumber = 1;
+    ChannelPayments channelPayments = 2;
+}
+
+message ConfirmRequestsMessage{
+    int64 paymentNumber = 1;
+}
+
+message ChannelPayment {
+    int64 channelId = 1;
+    int64 amount = 2;
+}
+
+message ChannelPayments {
+    repeated ChannelPayment channelPayments = 1;
+}
+
+message Result {
+    int64 paymentNumber = 1;
+    bool result = 2;
+}

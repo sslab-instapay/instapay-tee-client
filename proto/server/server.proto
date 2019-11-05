@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+service Server {
+    rpc paymentRequest(paymentRequestMessage) returns (Result) {}
+    rpc communicationInfoRequest(address) returns (CommunicationInfo) {}
+}
+
+message paymentRequestMessage {
+    string from = 1;
+    string to = 2;
+    int64 amount = 3;
+}
+
+message address {
+    string addr = 1;
+}
+
+message Result {
+    bool result = 1;
+}
+
+message CommunicationInfo {
+    string IPAddress = 1;
+    int64 port = 2;
+}
