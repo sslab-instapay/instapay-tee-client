@@ -18,6 +18,7 @@ type ClientGrpc struct {
 
 func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeRequestsMessage) (*clientPb.Result, error) {
 	// 동의한다는 메시지를 전달
+	C.initialize_enclave()
 	channelPayments := in.ChannelPayments
 
 	var goChannelIds []int64
@@ -40,6 +41,7 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 
 func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateRequestsMessage) (*clientPb.Result, error) {
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
+	C.initialize_enclave()
 	channelPayments := in.ChannelPayments
 
 	var goChannelIds []int64
@@ -61,6 +63,7 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 }
 
 func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmRequestsMessage) (*clientPb.Result, error) {
+	C.initialize_enclave()
 	log.Println("----ConfirmPayment Request Receive----")
 	C.ecall_go_idle_w(in.PaymentNumber)
 	log.Println("----ConfirmPayment Request End----")
