@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/sslab-instapay/instapay-go-client/model"
+	"github.com/sslab-instapay/instapay-tee-client/model"
 	"strconv"
 	"os"
 )

@@ -4,8 +4,8 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"log"
-	"github.com/sslab-instapay/instapay-go-client/model"
-	"github.com/sslab-instapay/instapay-go-client/db"
+	"github.com/sslab-instapay/instapay-tee-client/model"
+	"github.com/sslab-instapay/instapay-tee-client/db"
 	"fmt"
 	"sync"
 )

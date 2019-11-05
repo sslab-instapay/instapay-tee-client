@@ -1,10 +1,13 @@
 package service
 
+import "github.com/ethereum/go-ethereum/ethclient"
+
 /*
 #cgo CPPFLAGS: -I/home/xiaofo/sgxsdk/include -I./untrusted -I./include
 #cgo LDFLAGS: -L. -ltee
 #include "untrusted/app.h"
 */
+import "C"
 import "C"
 import (
 	"crypto/ecdsa"

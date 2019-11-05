@@ -9,7 +9,7 @@ import "C"
 
 import (
 	"context"
-	clientPb "github.com/sslab-instapay/instapay-go-client/proto/client"
+	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
 		"log"
 	)
 

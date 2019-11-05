@@ -1,18 +1,18 @@
 package main
 
 import (
-	instapayGrpc "github.com/sslab-instapay/instapay-go-client/grpc"
-	clientPb "github.com/sslab-instapay/instapay-go-client/proto/client"
+	instapayGrpc "github.com/sslab-instapay/instapay-tee-client/grpc"
+	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
 	"net"
 	"log"
 	"fmt"
 	"google.golang.org/grpc"
 	"github.com/gin-gonic/gin"
-	"github.com/sslab-instapay/instapay-go-client/router"
+	"github.com/sslab-instapay/instapay-tee-client/router"
 	"os"
 	"strconv"
 		"flag"
-	"github.com/sslab-instapay/instapay-go-client/service"
+	"github.com/sslab-instapay/instapay-tee-client/service"
 )
 
 func startGrpcServer(){

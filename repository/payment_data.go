@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/sslab-instapay/instapay-go-client/model"
-	"github.com/sslab-instapay/instapay-go-client/db"
+	"github.com/sslab-instapay/instapay-tee-client/model"
+	"github.com/sslab-instapay/instapay-tee-client/db"
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"

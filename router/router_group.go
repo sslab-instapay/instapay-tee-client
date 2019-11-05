@@ -2,10 +2,10 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-		"github.com/sslab-instapay/instapay-go-client/controller"
+	"github.com/sslab-instapay/instapay-tee-client/controller"
 )
 
-func RegisterChannelRouter(router *gin.Engine){
+func RegisterChannelRouter(router *gin.Engine) {
 
 	channelRouter := router.Group("channels/requests")
 	{
@@ -23,8 +23,3 @@ func RegisterChannelRouter(router *gin.Engine){
 		channelRouter.POST("server", controller.PaymentToServerChannelHandler)
 	}
 }
-
-
-
-
-
