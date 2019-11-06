@@ -1,5 +1,11 @@
 package main
 
+/*
+#cgo CPPFLAGS: -I/home/xiaofo/sgxsdk/include -I./untrusted -I./include
+#cgo LDFLAGS: -L. -ltee
+#include "untrusted/app.h"
+*/
+import "C"
 import (
 	instapayGrpc "github.com/sslab-instapay/instapay-tee-client/grpc"
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
@@ -13,6 +19,8 @@ import (
 	"strconv"
 		"flag"
 	"github.com/sslab-instapay/instapay-tee-client/service"
+	"github.com/sslab-instapay/instapay-tee-client/config"
+	"github.com/sslab-instapay/instapay-tee-client/repository"
 )
 
 func startGrpcServer(){
@@ -43,6 +51,8 @@ func startClientWebServer(){
 func main() {
 	// os[1] os[2] 로 전역변수 셋팅.
 
+	C.initialize_enclave()
+	LoadDataToTEE()
 	portNum := flag.String("port", "3001", "port number")
 	grpcPortNum := flag.String("grpc_port", "50001", "grpc_port number")
 	databaseName := flag.String("database_name", "instapay-client", "database Name")
@@ -72,4 +82,33 @@ func CORSMiddleware() gin.HandlerFunc {
 		}
 		c.Next()
 	}
+}
+
+func LoadDataToTEE(){
+	// TODO 데이터 베이스 데이터를 TEE에 로드하자 (Account, Channel)
+	account := config.GetAccountConfig()
+
+	pubKey := account.PublicKeyAddress[2:]
+	privKey := account.PrivateKey
+
+	teePublicKey := []C.uchar(pubKey)
+	teePrivateKey := []C.uchar(privKey)
+
+	C.ecall_preset_account_w(&teePublicKey[0], &teePrivateKey[0])
+
+	channelList, err := repository.GetOpenedChannelList()
+	if err != nil{
+		log.Println()
+	}
+
+	for _, channel := range channelList  {
+		myAddress := []C.uchar(channel.MyAddress[2:])
+		otherAddress := []C.uchar(channel.OtherAddress[2:])
+		otherIpAddress := []C.uchar(channel.OtherIp)
+		C.ecall_load_channel_data_w(channel.ChannelId, channel.Type, channel.Status, &myAddress[0],channel.MyDeposit, channel.OtherDeposit, channel.MyBalance, channel.LockedBalance, &otherAddress[0], &otherIpAddress, channel.OtherPort)
+	}
+
+
+	log.Println("--- TEE Data Load Successfully!!--- ")
+
 }

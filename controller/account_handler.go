@@ -11,7 +11,7 @@ import (
 
 func AccountInformationHandler(context *gin.Context) {
 	account := config.GetAccountConfig()
-	balance := service.GetBalance()
+	balance, _ := service.GetBalance()
 
 	lockedBalance, err := repository.GetAllChannelsLockedBalance()
 	if err != nil {

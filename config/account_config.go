@@ -10,11 +10,9 @@ var AccountConfig = map[string]string{
 	/* web3 and ethereum */
 	"PublicKeyAddress": GetAccountConfig().PublicKeyAddress,
 	"PrivateKey": GetAccountConfig().PrivateKey,
-
 }
 
 
-// TODO Enclave에서 포트에 따라 어카운트 주소 불러와야함
 func GetAccountConfig() model.Account {
 	port, _ := strconv.Atoi(os.Getenv("port"))
 	if port == 3001{
@@ -29,6 +27,17 @@ func GetAccountConfig() model.Account {
 		}
 
 	}else if port == 3003{
+		return model.Account{
+			PublicKeyAddress: "0x78902c58006916201F65f52f7834e467877f0500",
+			PrivateKey: "3038465f2b9be0048caa9f33e25b5dc50252f04c078aaddfbea74f26cdeb9f3c",
+		}
+		//TODO 개인키 공개키 발급 new
+	}else if port == 3004{
+		return model.Account{
+			PublicKeyAddress: "0x78902c58006916201F65f52f7834e467877f0500",
+			PrivateKey: "3038465f2b9be0048caa9f33e25b5dc50252f04c078aaddfbea74f26cdeb9f3c",
+		}
+	}else if port == 3005{
 		return model.Account{
 			PublicKeyAddress: "0x78902c58006916201F65f52f7834e467877f0500",
 			PrivateKey: "3038465f2b9be0048caa9f33e25b5dc50252f04c078aaddfbea74f26cdeb9f3c",

@@ -184,6 +184,8 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 	if event.Receiver.String() == config.GetAccountConfig().PublicKeyAddress {
 		// CASE IN CHANNEL
 		channelId := C.uint(event.Id)
+		// TODO 0x 뺴야함.
+		// TODO Secret key는 ~~ 이다.
 		owner := []C.uchar("D03A2CC08755eC7D75887f0997195654b928893e")
 		sender := []C.uchar(event.Receiver)
 		deposit := C.uint(event.Deposit)
