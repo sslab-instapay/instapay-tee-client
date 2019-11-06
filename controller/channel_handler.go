@@ -3,16 +3,16 @@ package controller
 import (
 	"net/http"
 	"github.com/gin-gonic/gin"
-	"github.com/sslab-instapay/instapay-go-client/repository"
+	"github.com/sslab-instapay/instapay-tee-client/repository"
 	"log"
 	"strconv"
-	"github.com/sslab-instapay/instapay-go-client/service"
-	"github.com/sslab-instapay/instapay-go-client/config"
-	serverPb "github.com/sslab-instapay/instapay-go-client/proto/server"
+	"github.com/sslab-instapay/instapay-tee-client/service"
+	"github.com/sslab-instapay/instapay-tee-client/config"
+	serverPb "github.com/sslab-instapay/instapay-tee-client/proto/server"
 	"google.golang.org/grpc"
 	"time"
 	"context"
-	"github.com/sslab-instapay/instapay-go-client/model"
+	"github.com/sslab-instapay/instapay-tee-client/model"
 )
 
 func OpenChannelHandler(ctx *gin.Context) {

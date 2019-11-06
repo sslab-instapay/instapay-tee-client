@@ -3,9 +3,9 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"github.com/sslab-instapay/instapay-go-client/config"
-	"github.com/sslab-instapay/instapay-go-client/service"
-	"github.com/sslab-instapay/instapay-go-client/repository"
+	"github.com/sslab-instapay/instapay-tee-client/config"
+	"github.com/sslab-instapay/instapay-tee-client/service"
+	"github.com/sslab-instapay/instapay-tee-client/repository"
 	"log"
 )
 

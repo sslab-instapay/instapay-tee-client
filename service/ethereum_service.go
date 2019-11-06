@@ -15,13 +15,13 @@ import (
 	"math/big"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	instapay "github.com/sslab-instapay/instapay-go-client/contract"
-	serverPb "github.com/sslab-instapay/instapay-go-client/proto/server"
-	"github.com/sslab-instapay/instapay-go-client/config"
+	instapay "github.com/sslab-instapay/instapay-tee-client/contract"
+	serverPb "github.com/sslab-instapay/instapay-tee-client/proto/server"
+	"github.com/sslab-instapay/instapay-tee-client/config"
 	"context"
 	"fmt"
-	"github.com/sslab-instapay/instapay-go-client/repository"
-	"github.com/sslab-instapay/instapay-go-client/model"
+	"github.com/sslab-instapay/instapay-tee-client/repository"
+	"github.com/sslab-instapay/instapay-tee-client/model"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -178,30 +178,24 @@ func ListenContractEvent() {
 func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 
 	C.initialize_enclave()
-
+	account := config.GetAccountConfig()
 	// 내가 리시버 즉 IN 채널
 	log.Println("----- Handle Create Channel Event ----")
 	if event.Receiver.String() == config.GetAccountConfig().PublicKeyAddress {
 		// CASE IN CHANNEL
 		channelId := C.uint(event.Id)
 		// TODO 0x 뺴야함.
-		// TODO Secret key는 ~~ 이다.
-		owner := []C.uchar("D03A2CC08755eC7D75887f0997195654b928893e")
-		sender := []C.uchar(event.Receiver)
+		owner := []C.uchar(account.PublicKeyAddress[2:])
+		sender := []C.uchar(event.Receiver[2:])
 		deposit := C.uint(event.Deposit)
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
 	} else if event.Owner.String() == config.GetAccountConfig().PublicKeyAddress {
 		channelId := C.uint(event.Id)
-		owner := []C.uchar(event.Receiver)
-		sender := []C.uchar("D03A2CC08755eC7D75887f0997195654b928893e")
+		owner := []C.uchar(event.Receiver[2:])
+		sender := []C.uchar(account.PublicKeyAddress[2:])
 		deposit := C.uint(event.Deposit)
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
 
-		// 아웃 채널
-		//var channel = model.Channel{ChannelId: event.Id.Int64(), Type: model.OUT,
-		//	Status: model.IDLE, MyAddress: event.Owner.String(),
-		//	MyBalance: DepositEth.Int64(), MyDeposit: DepositEth.Int64(), OtherDeposit: 0, OtherAddress: event.Receiver.String()}
-		//repository.InsertChannel(channel)
 	}
 
 	connection, err := grpc.Dial(config.EthereumConfig["serverGrpcHost"] + ":" + config.EthereumConfig["serverGrpcPort"], grpc.WithInsecure())

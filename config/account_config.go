@@ -6,13 +6,6 @@ import (
 	"os"
 )
 
-var AccountConfig = map[string]string{
-	/* web3 and ethereum */
-	"PublicKeyAddress": GetAccountConfig().PublicKeyAddress,
-	"PrivateKey": GetAccountConfig().PrivateKey,
-}
-
-
 func GetAccountConfig() model.Account {
 	port, _ := strconv.Atoi(os.Getenv("port"))
 	if port == 3001{

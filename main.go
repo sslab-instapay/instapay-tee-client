@@ -49,7 +49,6 @@ func startClientWebServer(){
 }
 
 func main() {
-	// os[1] os[2] 로 전역변수 셋팅.
 
 	C.initialize_enclave()
 	LoadDataToTEE()
@@ -62,7 +61,7 @@ func main() {
 	os.Setenv("port", *portNum)
 	os.Setenv("grpc_port", *grpcPortNum)
 	os.Setenv("database_name", *databaseName)
-	//
+
 	go service.ListenContractEvent()
 	go startGrpcServer()
 	startClientWebServer()
@@ -107,7 +106,6 @@ func LoadDataToTEE(){
 		otherIpAddress := []C.uchar(channel.OtherIp)
 		C.ecall_load_channel_data_w(channel.ChannelId, channel.Type, channel.Status, &myAddress[0],channel.MyDeposit, channel.OtherDeposit, channel.MyBalance, channel.LockedBalance, &otherAddress[0], &otherIpAddress, channel.OtherPort)
 	}
-
 
 	log.Println("--- TEE Data Load Successfully!!--- ")
 
