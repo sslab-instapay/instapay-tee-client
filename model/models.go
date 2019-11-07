@@ -59,13 +59,13 @@ type CreateChannelEvent struct {
 	Id       int64
 	Owner    common.Address
 	Receiver common.Address
-	Deposit  *big.Int
+	Deposit  int64
 }
 
 type CloseChannelEvent struct {
 	Id          int64
-	Ownerbal    *big.Int
-	Receiverbal *big.Int
+	Ownerbal    int64
+	Receiverbal int64
 }
 
 type EjectEvent struct {
