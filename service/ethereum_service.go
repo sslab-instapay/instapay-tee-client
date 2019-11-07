@@ -239,7 +239,7 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 }
 
 func HandleCloseChannelEvent(event model.CloseChannelEvent) {
-	channel, err := repository.GetChannelById(event.Id.Int64())
+	channel, err := repository.GetChannelById(event.Id)
 
 	if err != nil {
 		log.Println("there is no channel")

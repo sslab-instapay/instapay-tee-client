@@ -63,12 +63,12 @@ type CreateChannelEvent struct {
 }
 
 type CloseChannelEvent struct {
-	Id          *big.Int
+	Id          int64
 	Ownerbal    *big.Int
 	Receiverbal *big.Int
 }
 
 type EjectEvent struct {
-	Pn              *big.Int
+	Pn              int64
 	Registeredstage int
 }
