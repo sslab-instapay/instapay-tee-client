@@ -56,7 +56,7 @@ type Channel struct {
 }
 
 type CreateChannelEvent struct {
-	Id       *big.Int
+	Id       int64
 	Owner    common.Address
 	Receiver common.Address
 	Deposit  *big.Int

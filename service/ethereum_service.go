@@ -6,7 +6,6 @@ package service
 #include "untrusted/app.h"
 */
 import "C"
-import "C"
 import (
 	"crypto/ecdsa"
 	"log"
@@ -35,11 +34,10 @@ import (
 
 func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error) {
 
-	C.initialize_enclave()
-
+	account := config.GetAccountConfig()
 	nonce := C.uint(0)
-	owner := []C.uchar("D03A2CC08755eC7D75887f0997195654b928893e")
-	receiver := []C.uchar("0b4161ad4f49781a821c308d672e6c669139843c")
+	owner := []C.uchar(account.PublicKeyAddress[2:])
+	receiver := []C.uchar(otherAddress[2:])
 	newDeposit := C.uint(deposit)
 	SigLen := C.uint(0)
 
@@ -177,14 +175,13 @@ func ListenContractEvent() {
 
 func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 
-	C.initialize_enclave()
 	account := config.GetAccountConfig()
 	// 내가 리시버 즉 IN 채널
 	log.Println("----- Handle Create Channel Event ----")
 	if event.Receiver.String() == config.GetAccountConfig().PublicKeyAddress {
 		// CASE IN CHANNEL
+
 		channelId := C.uint(event.Id)
-		// TODO 0x 뺴야함.
 		owner := []C.uchar(account.PublicKeyAddress[2:])
 		sender := []C.uchar(event.Receiver[2:])
 		deposit := C.uint(event.Deposit)
@@ -224,7 +221,7 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 		return err
 	}
 
-	channel, err := repository.GetChannelById(event.Id.Int64())
+	channel, err := repository.GetChannelById(event.Id)
 	if err != nil{
 		log.Println(err)
 		return err
