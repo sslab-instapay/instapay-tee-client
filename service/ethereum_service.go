@@ -39,7 +39,7 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	nonce := C.uint(0)
 	owner := []C.uchar(account.PublicKeyAddress[2:])
 	receiver := []C.uchar(otherAddress[2:])
-	newDeposit := C.uint(deposit)
+	newDeposit := C.uint(uint32(deposit))
 	SigLen := C.uint(0)
 
 	var sig *C.uchar = C.ecall_create_channel_w(nonce, &owner[0], &receiver[0], newDeposit, &SigLen)
@@ -182,16 +182,16 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 	if event.Receiver.String() == config.GetAccountConfig().PublicKeyAddress {
 		// CASE IN CHANNEL
 
-		channelId := C.uint(event.Id)
+		channelId := C.uint(uint32(event.Id))
 		owner := []C.uchar(account.PublicKeyAddress[2:])
 		sender := []C.uchar(event.Receiver.Hex()[2:])
-		deposit := C.uint(event.Deposit)
+		deposit := C.uint(uint32(event.Deposit))
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
 	} else if event.Owner.String() == config.GetAccountConfig().PublicKeyAddress {
-		channelId := C.uint(event.Id)
+		channelId := C.uint(uint32(event.Id))
 		owner := []C.uchar(event.Receiver.Hex()[2:])
 		sender := []C.uchar(account.PublicKeyAddress[2:])
-		deposit := C.uint(event.Deposit)
+		deposit := C.uint(uint32(event.Deposit))
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
 
 	}

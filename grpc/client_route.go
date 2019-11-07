@@ -26,11 +26,11 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 
 	// Extract Data
 	for _, channelPayment := range channelPayments.ChannelPayments{
-		channelIds = append(channelIds, C.uint(channelPayment.ChannelId))
-		amount = append(amount, C.int(channelPayment.Amount))
+		channelIds = append(channelIds, C.uint(uint32(channelPayment.ChannelId)))
+		amount = append(amount, C.int(int32(channelPayment.Amount)))
 	}
 
-	paymentNum := C.uint(in.PaymentNumber)
+	paymentNum := C.uint(uint32(in.PaymentNumber))
 	size := C.uint(len(channelIds))
 	C.ecall_go_pre_update_w(paymentNum, &channelIds[0], &amount[0], size)
 
@@ -46,12 +46,12 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 
 	// Extract Data
 	for _, channelPayment := range channelPayments.ChannelPayments{
-		channelIds = append(channelIds, C.uint(channelPayment.ChannelId))
-		amount = append(amount, C.int(channelPayment.Amount))
+		channelIds = append(channelIds, C.uint(uint32(channelPayment.ChannelId)))
+		amount = append(amount, C.int(int32(channelPayment.Amount)))
 	}
 
-	paymentNum := C.uint(in.PaymentNumber)
-	size := C.uint(len(channelIds))
+	paymentNum := C.uint(uint32(in.PaymentNumber))
+	size := C.uint(uint32(len(channelIds)))
 	C.ecall_go_post_update_w(paymentNum, &channelIds[0], &amount[0], size)
 
 	return &clientPb.Result{PaymentNumber: in.PaymentNumber, Result: true}, nil
@@ -59,7 +59,7 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 
 func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmRequestsMessage) (*clientPb.Result, error) {
 	log.Println("----ConfirmPayment Request Receive----")
-	C.ecall_go_idle_w(C.uint(in.PaymentNumber))
+	C.ecall_go_idle_w(C.uint(uint32(in.PaymentNumber)))
 	log.Println("----ConfirmPayment Request End----")
 
 	return &clientPb.Result{PaymentNumber: in.PaymentNumber, Result: true}, nil
