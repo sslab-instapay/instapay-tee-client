@@ -106,7 +106,27 @@ func LoadDataToTEE(){
 		myAddress := []C.uchar(channel.MyAddress[2:])
 		otherAddress := []C.uchar(channel.OtherAddress[2:])
 		otherIpAddress := []C.uchar(channel.OtherIp)
-		C.ecall_load_channel_data_w(uint32(channel.ChannelId), channel.Type, channel.Status, &myAddress[0], uint32(channel.MyDeposit), uint32(channel.OtherDeposit), uint32(channel.MyBalance), uint32(channel.LockedBalance), &otherAddress[0], &otherIpAddress[0], uint32(channel.OtherPort))
+
+		var ChannelType C.uint
+		var ChannelStatus C.uint
+
+		if channel.Type == "IN" {
+			ChannelType = 1
+		} else if channel.Type == "OUT" {
+			ChannelType = 0
+		}
+
+		if channel.Status == "IDLE" {
+			ChannelStatus = 0
+		} else if channel.Status == "PRE_UPDATE" {
+			ChannelStatus = 1
+		} else if channel.Status == "POST_UPDATE" {
+			ChannelStatus = 2
+		} else if channel.Status == "CLOSED" {
+			ChannelStatus = 3
+		}
+
+		C.ecall_load_channel_data_w(C.uint(channel.ChannelId), ChannelType, ChannelStatus, &myAddress[0], C.uint(channel.MyDeposit), C.uint(channel.OtherDeposit), C.uint(channel.MyBalance), C.uint(channel.LockedBalance), &otherAddress[0], &otherIpAddress[0], C.uint(channel.OtherPort))
 	}
 
 	log.Println("--- TEE Data Load Successfully!!--- ")
