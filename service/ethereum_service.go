@@ -184,12 +184,12 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 
 		channelId := C.uint(event.Id)
 		owner := []C.uchar(account.PublicKeyAddress[2:])
-		sender := []C.uchar(event.Receiver[2:])
+		sender := []C.uchar(event.Receiver.Hex()[2:])
 		deposit := C.uint(event.Deposit)
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
 	} else if event.Owner.String() == config.GetAccountConfig().PublicKeyAddress {
 		channelId := C.uint(event.Id)
-		owner := []C.uchar(event.Receiver[2:])
+		owner := []C.uchar(event.Receiver.Hex()[2:])
 		sender := []C.uchar(account.PublicKeyAddress[2:])
 		deposit := C.uint(event.Deposit)
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
