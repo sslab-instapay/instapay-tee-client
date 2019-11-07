@@ -1,39 +1,37 @@
 package grpc
 
 /*
-#cgo CPPFLAGS: -I/home/xiaofo/sgxsdk/include -I./untrusted -I./include
-#cgo LDFLAGS: -L. -ltee
-#include "untrusted/app.h"
+#cgo CPPFLAGS: -I/home/xiaofo/sgxsdk/include -I/home/xiaofo/instapay/src/github.com/sslab-instapay/instapay-tee-client
+#cgo LDFLAGS: -L/home/xiaofo/instapay/src/github.com/sslab-instapay/instapay-tee-client -ltee
+
+#include "app.h"
 */
 import "C"
 
 import (
 	"context"
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
-		"log"
-	)
+	"log"
+)
 
 type ClientGrpc struct {
 }
 
 func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeRequestsMessage) (*clientPb.Result, error) {
 	// 동의한다는 메시지를 전달
-	//C.initialize_enclave()
 	channelPayments := in.ChannelPayments
 
-	var goChannelIds []int64
-	var goAmounts []int64
+	var channelIds []C.uint
+	var amount []C.int
 
 	// Extract Data
 	for _, channelPayment := range channelPayments.ChannelPayments{
-		goChannelIds = append(goChannelIds, channelPayment.ChannelId)
-		goAmounts = append(goAmounts, channelPayment.Amount)
+		channelIds = append(channelIds, C.uint(channelPayment.ChannelId))
+		amount = append(amount, C.int(channelPayment.Amount))
 	}
 
 	paymentNum := C.uint(in.PaymentNumber)
-	channelIds := []C.uint{goChannelIds}
-	amount := []C.int{goAmounts}
-	size := C.uint(len(goChannelIds))
+	size := C.uint(len(channelIds))
 	C.ecall_go_pre_update_w(paymentNum, &channelIds[0], &amount[0], size)
 
 	return &clientPb.Result{PaymentNumber: in.PaymentNumber, Result: true}, nil
@@ -41,31 +39,27 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 
 func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateRequestsMessage) (*clientPb.Result, error) {
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
-	//C.initialize_enclave()
 	channelPayments := in.ChannelPayments
 
-	var goChannelIds []int64
-	var goAmounts []int64
+	var channelIds []C.uint
+	var amount []C.int
 
 	// Extract Data
 	for _, channelPayment := range channelPayments.ChannelPayments{
-		goChannelIds = append(goChannelIds, channelPayment.ChannelId)
-		goAmounts = append(goAmounts, channelPayment.Amount)
+		channelIds = append(channelIds, C.uint(channelPayment.ChannelId))
+		amount = append(amount, C.int(channelPayment.Amount))
 	}
 
 	paymentNum := C.uint(in.PaymentNumber)
-	channelIds := []C.uint{goChannelIds}
-	amount := []C.int{goAmounts}
-	size := C.uint(len(goChannelIds))
-
+	size := C.uint(len(channelIds))
 	C.ecall_go_post_update_w(paymentNum, &channelIds[0], &amount[0], size)
+
 	return &clientPb.Result{PaymentNumber: in.PaymentNumber, Result: true}, nil
 }
 
 func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmRequestsMessage) (*clientPb.Result, error) {
-	//C.initialize_enclave()
 	log.Println("----ConfirmPayment Request Receive----")
-	C.ecall_go_idle_w(in.PaymentNumber)
+	C.ecall_go_idle_w(C.uint(in.PaymentNumber))
 	log.Println("----ConfirmPayment Request End----")
 
 	return &clientPb.Result{PaymentNumber: in.PaymentNumber, Result: true}, nil
