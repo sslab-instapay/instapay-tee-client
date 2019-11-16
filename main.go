@@ -19,7 +19,7 @@ import (
 	"github.com/sslab-instapay/instapay-tee-client/router"
 	"os"
 	"strconv"
-		"flag"
+	"flag"
 	"github.com/sslab-instapay/instapay-tee-client/service"
 	"github.com/sslab-instapay/instapay-tee-client/config"
 	"github.com/sslab-instapay/instapay-tee-client/repository"
@@ -38,7 +38,6 @@ func startGrpcServer(){
 }
 
 func startClientWebServer(){
-
 	defaultRouter := gin.Default()
 	defaultRouter.LoadHTMLGlob("templates/*")
 
@@ -51,7 +50,6 @@ func startClientWebServer(){
 }
 
 func main() {
-
 	C.initialize_enclave()
 	LoadDataToTEE()
 	portNum := flag.String("port", "3001", "port number")
@@ -130,5 +128,4 @@ func LoadDataToTEE(){
 	}
 
 	log.Println("--- TEE Data Load Successfully!!--- ")
-
 }

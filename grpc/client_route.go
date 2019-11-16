@@ -12,6 +12,7 @@ import (
 	"context"
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
 	"log"
+	"fmt"
 )
 
 type ClientGrpc struct {
@@ -61,6 +62,9 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 	log.Println("----ConfirmPayment Request Receive----")
 	C.ecall_go_idle_w(C.uint(uint32(in.PaymentNumber)))
 	log.Println("----ConfirmPayment Request End----")
+
+	fmt.Println(C.ecall_get_balance_w(C.uint(1)))
+	fmt.Println(C.ecall_get_balance_w(C.uint(2)))
 
 	return &clientPb.Result{PaymentNumber: in.PaymentNumber, Result: true}, nil
 }

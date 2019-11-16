@@ -7,7 +7,7 @@ source $SGX_SDK/environment
 
 ## environment variable
 ```sh
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GO_PATH/src/github.com/sslab-instapay/instapay-tee-client
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GOPATH/src/github.com/sslab-instapay/instapay-tee-client
 ```
 
 ## run
