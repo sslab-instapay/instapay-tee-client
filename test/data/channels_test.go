@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"testing"
 	"log"
-	"github.com/sslab-instapay/instapay-go-client/repository"
-	"github.com/sslab-instapay/instapay-go-client/model"
-	"github.com/sslab-instapay/instapay-go-client/config"
+	"github.com/sslab-instapay/instapay-tee-client/repository"
+	"github.com/sslab-instapay/instapay-tee-client/model"
+	"github.com/sslab-instapay/instapay-tee-client/config"
 	"os"
 )
 
 func TestGetChannelList(t *testing.T){
+	os.Setenv("database_name", "instapay-client")
 	channelList, err := repository.GetChannelList()
 
 	if err != nil{
@@ -31,6 +32,7 @@ func TestGetClosedChannelList(t *testing.T){
 }
 
 func TestGetOpenedChannelList(t *testing.T){
+	os.Setenv("database_name", "instapay-client")
 	channelList, err := repository.GetOpenedChannelList()
 
 	if err != nil{
