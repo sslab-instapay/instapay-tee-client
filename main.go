@@ -51,7 +51,6 @@ func startClientWebServer(){
 
 func main() {
 	C.initialize_enclave()
-	LoadDataToTEE()
 	portNum := flag.String("port", "3001", "port number")
 	grpcPortNum := flag.String("grpc_port", "50001", "grpc_port number")
 	databaseName := flag.String("database_name", "instapay-client", "database Name")
@@ -61,7 +60,7 @@ func main() {
 	os.Setenv("port", *portNum)
 	os.Setenv("grpc_port", *grpcPortNum)
 	os.Setenv("database_name", *databaseName)
-
+	LoadDataToTEE()
 	go service.ListenContractEvent()
 	go startGrpcServer()
 	startClientWebServer()
@@ -97,8 +96,10 @@ func LoadDataToTEE(){
 
 	channelList, err := repository.GetOpenedChannelList()
 	if err != nil{
-		log.Println()
+		log.Println(err)
 	}
+	log.Println("----logger----")
+	log.Println(channelList)
 
 	for _, channel := range channelList  {
 		myAddress := []C.uchar(channel.MyAddress[2:])
