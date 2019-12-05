@@ -6,7 +6,14 @@ import (
 	"os"
 )
 
+var AccountConfig = model.Account{}
+
 func GetAccountConfig() model.Account {
+
+	if AccountConfig.PublicKeyAddress != "" {
+		return AccountConfig
+	}
+
 	port, _ := strconv.Atoi(os.Getenv("port"))
 	if port == 3001{
 		return model.Account{
