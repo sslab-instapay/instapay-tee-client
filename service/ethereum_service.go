@@ -28,6 +28,8 @@ import (
 	"time"
 	"reflect"
 	"unsafe"
+	"encoding/hex"
+	"github.com/ethereum/go-ethereum/rlp"
 )
 
 func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error) {
@@ -58,7 +60,11 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 		fmt.Printf("%02x", s[i])
 	}
 
-	client.SendTransaction(context.Background(), hdr)
+	convertedRawTx := C.GoString(s)
+	rawTxBytes, err := hex.DecodeString(convertedRawTx)
+	tx := new(types.Transaction)
+	rlp.DecodeBytes(rawTxBytes, &tx)
+	client.SendTransaction(context.Background(), tx)
 
 	// TODO db도 업데이트해야함.
 
@@ -93,6 +99,12 @@ func SendCloseChannelTransaction(channelId int64) {
 	for i := C.uint(0); i < SigLen; i++ {
 		fmt.Printf("%02x", s[i])
 	}
+
+	convertedRawTx := C.GoString(s)
+	rawTxBytes, err := hex.DecodeString(convertedRawTx)
+	tx := new(types.Transaction)
+	rlp.DecodeBytes(rawTxBytes, &tx)
+	client.SendTransaction(context.Background(), tx)
 
 }
 
