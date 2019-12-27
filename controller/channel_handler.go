@@ -15,6 +15,8 @@ import (
 	"github.com/sslab-instapay/instapay-tee-client/model"
 )
 
+var ExecutionTime time.Time
+
 func OpenChannelHandler(ctx *gin.Context) {
 
 	otherAddress := ctx.PostForm("other_addr")
@@ -91,6 +93,8 @@ func PaymentToServerChannelHandler(ctx *gin.Context) {
 
 	clientContext, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
+
+	ExecutionTime = time.Now()
 	r, err := client.PaymentRequest(clientContext, &serverPb.PaymentRequestMessage{From: myAddress, To: otherAddress, Amount: int64(amount)})
 	if err != nil {
 		log.Println(err)

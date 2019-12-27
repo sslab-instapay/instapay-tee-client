@@ -98,12 +98,10 @@ func LoadDataToTEE(){
 	if err != nil{
 		log.Println(err)
 	}
-	log.Println("----logger----")
-	log.Println(channelList)
 
 	for _, channel := range channelList  {
-		myAddress := []C.uchar(channel.MyAddress[2:])
-		otherAddress := []C.uchar(channel.OtherAddress[2:])
+		myAddress := []C.uchar(channel.MyAddress)
+		otherAddress := []C.uchar(channel.OtherAddress)
 		otherIpAddress := []C.uchar(channel.OtherIp)
 
 		var ChannelType C.uint
@@ -124,7 +122,6 @@ func LoadDataToTEE(){
 		} else if channel.Status == "CLOSED" {
 			ChannelStatus = 3
 		}
-
 		C.ecall_load_channel_data_w(C.uint(channel.ChannelId), ChannelType, ChannelStatus, &myAddress[0], C.uint(channel.MyDeposit), C.uint(channel.OtherDeposit), C.uint(channel.MyBalance), C.uint(channel.LockedBalance), &otherAddress[0], &otherIpAddress[0], C.uint(channel.OtherPort))
 	}
 
