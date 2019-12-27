@@ -8,10 +8,7 @@ package service
 */
 import "C"
 import (
-	"crypto/ecdsa"
 	"log"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"math/big"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -35,14 +32,21 @@ import (
 
 func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error) {
 
+	client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
+	if err != nil{
+		log.Println(err)
+	}
 	account := config.GetAccountConfig()
-	nonce := C.uint(0)
+	address := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress)
+	nonce, err := client.PendingNonceAt(context.Background(), address)
+
+	convertNonce := C.uint(nonce)
 	owner := []C.uchar(account.PublicKeyAddress[2:])
 	receiver := []C.uchar(otherAddress[2:])
 	newDeposit := C.uint(uint32(deposit))
 	SigLen := C.uint(0)
 
-	var sig *C.uchar = C.ecall_create_channel_w(nonce, &owner[0], &receiver[0], newDeposit, &SigLen)
+	var sig *C.uchar = C.ecall_create_channel_w(convertNonce, &owner[0], &receiver[0], newDeposit, &SigLen)
 	hdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(sig)),
 		Len:  int(SigLen),
@@ -54,6 +58,10 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 		fmt.Printf("%02x", s[i])
 	}
 
+	client.SendTransaction(context.Background(), hdr)
+
+	// TODO db도 업데이트해야함.
+
 	return "", nil
 }
 
@@ -64,52 +72,28 @@ func SendCloseChannelTransaction(channelId int64) {
 		log.Println(err)
 	}
 
-	// loading instapay contract on the blockchain
 	address := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress) // change to correct address
-	instance, err := instapay.NewContract(address, client)
+
+	nonce, err := client.PendingNonceAt(context.Background(), address)
 	if err != nil {
 		log.Println(err)
 	}
 
-	// loading my public key, nonce and gas price
-	privateKey, err := crypto.HexToECDSA(config.GetAccountConfig().PrivateKey)
-	if err != nil {
-		log.Println(err)
+	ChannelID := C.uint(channelId)
+	SigLen := C.uint(0)
+
+	var sig2 *C.uchar = C.ecall_close_channel_w(nonce, ChannelID, &SigLen)
+	hdr := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(sig2)),
+		Len:  int(SigLen),
+		Cap:  int(SigLen),
 	}
 
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		log.Println("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+	s := *(*[]C.uchar)(unsafe.Pointer(&hdr))
+	for i := C.uint(0); i < SigLen; i++ {
+		fmt.Printf("%02x", s[i])
 	}
 
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-
-	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
-	if err != nil {
-		log.Println(err)
-	}
-
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Println(err)
-	}
-
-	// composing a transaction
-	auth := bind.NewKeyedTransactor(privateKey)
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.GasLimit = uint64(2000000)
-	auth.GasPrice = gasPrice
-
-	channel, err := repository.GetChannelById(channelId)
-	//TODO other Balance MyBalance 계산
-	otherBalance := channel.MyDeposit - channel.MyBalance
-	tx, err := instance.CloseChannel(auth, big.NewInt(channelId), big.NewInt(int64(otherBalance)), big.NewInt(int64(channel.MyBalance)))
-	if err != nil {
-		log.Println(err)
-	}
-
-	fmt.Printf("tx sent: %s\n", tx.Hash().Hex())
 }
 
 func ListenContractEvent() {
