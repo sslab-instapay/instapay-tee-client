@@ -66,8 +66,6 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	rlp.DecodeBytes(rawTxBytes, &tx)
 	client.SendTransaction(context.Background(), tx)
 
-	// TODO db도 업데이트해야함.
-
 	return "", nil
 }
 
