@@ -13,6 +13,7 @@ import (
 	"time"
 	"context"
 	"github.com/sslab-instapay/instapay-tee-client/model"
+	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
 )
 
 var ExecutionTime time.Time
@@ -35,31 +36,40 @@ func DepositChannelHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Channel"})
 }
 
-func DirectPayChannelHandler(context *gin.Context) {
-	//channelId := context.PostForm("ch_id")
-	//amount := context.PostForm("amount")
+func DirectPayChannelHandler(ctx *gin.Context) {
+	channelIdParam := ctx.PostForm("ch_id")
+	amountParam := ctx.PostForm("amount")
 
-	//conn, err := grpc.Dial(config.EthereumConfig["serverAddr"], grpc.WithInsecure())
-	//if err != nil {
-	//	log.Fatalf("did not connect: %v", err)
-	//}
-	//defer conn.Close()
-	//c := pb.NewGreeterClient(conn)
-	//
-	//// Contact the server and print out its response.
-	//name := defaultName
-	//if len(os.Args) > 1 {
-	//	name = os.Args[1]
-	//}
-	//ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	//defer cancel()
-	//r, err := c.SayHello(ctx, &pb.HelloRequest{Name: name})
-	//if err != nil {
-	//	log.Fatalf("could not greet: %v", err)
-	//}
-	//log.Printf("Greeting: %s", r.GetMessage())
+	channelId, err := strconv.Atoi(channelIdParam)
+	if err != nil{
+		log.Println(err)
+	}
+	amount, err := strconv.Atoi(amountParam)
+	if err != nil{
+		log.Println(err)
+	}
+	channel, err := repository.GetChannelById(int64(channelId))
+	if err != nil{
+		log.Println(err)
+	}
 
-	context.JSON(http.StatusOK, gin.H{"message": "Channel"})
+	conn, err := grpc.Dial(channel.OtherIp + ":" + strconv.Itoa(channel.OtherPort), grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	client := clientPb.NewClientClient(conn)
+
+	_, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	// TODO directPayment 로 변경.
+	r, err := client.UpdateRequest(ctx, &clientPb.UpdateRequestsMessage{PaymentNumber: int64(amount)})
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+	log.Println(r.Result)
+
+	ctx.JSON(http.StatusOK, gin.H{"sucess": r.Result})
 }
 
 func CloseChannelHandler(ctx *gin.Context) {
