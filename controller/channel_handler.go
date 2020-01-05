@@ -1,5 +1,6 @@
 package controller
 
+import "C"
 import (
 	"net/http"
 	"github.com/gin-gonic/gin"
@@ -68,6 +69,10 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Println(r.Result)
+	// 결과가 성공하면 update
+	if r.Result {
+		C.ecall_pay_w(C.uint(uint32(channelId)), C.uint(uint32(amount)))
+	}
 
 	ctx.JSON(http.StatusOK, gin.H{"sucess": r.Result})
 }
