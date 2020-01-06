@@ -4,7 +4,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"log"
 	"github.com/ethereum/go-ethereum/common"
-	store "github.com/sslab-instapay/instapay-go-client/contract"
+	store "github.com/sslab-instapay/instapay-tee-client/contract"
 	"math/big"
 	"fmt"
 )
