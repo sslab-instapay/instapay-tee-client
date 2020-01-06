@@ -30,6 +30,21 @@ func OpenChannelHandler(ctx *gin.Context) {
 	}
 }
 
+func CloseChannelHandler(ctx *gin.Context) {
+	channelIdParam := ctx.PostForm("channelId")
+	log.Println(channelIdParam)
+	channelId, _ := strconv.Atoi(channelIdParam)
+	log.Println(channelId)
+
+	service.SendCloseChannelTransaction(int64(channelId))
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Channel"})
+}
+
+func EjectChannelHandler(ctx *gin.Context){
+
+}
+
 // TODO 데모 시나리오 이후 구현
 func DepositChannelHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Channel"})
@@ -60,17 +75,6 @@ func DirectPayChannelHandler(context *gin.Context) {
 	//log.Printf("Greeting: %s", r.GetMessage())
 
 	context.JSON(http.StatusOK, gin.H{"message": "Channel"})
-}
-
-func CloseChannelHandler(ctx *gin.Context) {
-	channelIdParam := ctx.PostForm("channelId")
-	log.Println(channelIdParam)
-	channelId, _ := strconv.Atoi(channelIdParam)
-	log.Println(channelId)
-
-	service.SendCloseChannelTransaction(int64(channelId))
-
-	ctx.JSON(http.StatusOK, gin.H{"message": "Channel"})
 }
 
 func PaymentToServerChannelHandler(ctx *gin.Context) {

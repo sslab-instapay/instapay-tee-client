@@ -12,7 +12,7 @@ import (
 	"math/big"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	instapay "github.com/sslab-instapay/instapay-tee-client/contract"
+	instapay "github.com/sslab-instapay/instapay-tee-client/contracts"
 	serverPb "github.com/sslab-instapay/instapay-tee-client/proto/server"
 	"github.com/sslab-instapay/instapay-tee-client/config"
 	"context"
@@ -76,8 +76,7 @@ func SendCloseChannelTransaction(channelId int64) {
 		log.Println(err)
 	}
 
-	address := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress) // change to correct address
-
+	address := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress)
 	nonce, err := client.PendingNonceAt(context.Background(), address)
 	if err != nil {
 		log.Println(err)
@@ -125,7 +124,7 @@ func ListenContractEvent() {
 		log.Println(err)
 	}
 
-	contractAbi, err := abi.JSON(strings.NewReader(string(instapay.ContractABI)))
+	contractAbi, err := abi.JSON(strings.NewReader(string(instapay.InstapayABI)))
 	if err != nil {
 		log.Println(err)
 	}
@@ -175,19 +174,18 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 	log.Println("----- Handle Create Channel Event ----")
 	if event.Receiver.String() == config.GetAccountConfig().PublicKeyAddress {
 		// CASE IN CHANNEL
-
 		channelId := C.uint(uint32(event.Id))
 		owner := []C.uchar(account.PublicKeyAddress[2:])
 		sender := []C.uchar(event.Receiver.Hex()[2:])
 		deposit := C.uint(uint32(event.Deposit))
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
 	} else if event.Owner.String() == config.GetAccountConfig().PublicKeyAddress {
+		// CASE OUT CHANNEL
 		channelId := C.uint(uint32(event.Id))
 		owner := []C.uchar(event.Receiver.Hex()[2:])
 		sender := []C.uchar(account.PublicKeyAddress[2:])
 		deposit := C.uint(uint32(event.Deposit))
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
-
 	}
 
 	connection, err := grpc.Dial(config.EthereumConfig["serverGrpcHost"] + ":" + config.EthereumConfig["serverGrpcPort"], grpc.WithInsecure())
@@ -211,7 +209,6 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 
 	r, err := client.CommunicationInfoRequest(clientContext, &serverPb.Address{Addr: otherAddress})
 	if err != nil {
-		log.Println("GRPC Request Error")
 		log.Println(err)
 		return err
 	}
@@ -239,9 +236,13 @@ func HandleCloseChannelEvent(event model.CloseChannelEvent) {
 	if err != nil {
 		log.Println("there is no channel")
 	}
-
+	log.Println("----- Handle Close Channel Event ----")
+	//TODO Close channel Event로 ..
 	channel.Status = model.CLOSED
-	repository.UpdateChannel(channel)
+	_, err = repository.UpdateChannel(channel)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func HandleEjectEvent(event model.EjectEvent) {

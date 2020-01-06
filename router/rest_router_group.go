@@ -19,5 +19,8 @@ func RegisterRestRouter(router *gin.Engine) {
 	channelRouter := router.Group("channel")
 	{
 		channelRouter.GET("list", controller.GetChannelListHandler)
+		channelRouter.POST("open", controller.OpenChannelHandler)
+		channelRouter.POST("close", controller.CloseChannelHandler)
+		channelRouter.POST("eject", controller.EjectChannelHandler)
 	}
 }
