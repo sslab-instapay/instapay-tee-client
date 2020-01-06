@@ -78,8 +78,8 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 
 	_, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	// TODO directPayment 로 변경.
-	r, err := client.UpdateRequest(ctx, &clientPb.UpdateRequestsMessage{PaymentNumber: int64(amount)})
+
+	r, err := client.DirectChannelPayment(ctx, &clientPb.ChannelPayment{ChannelId: int64(channelId), Amount: int64(amount)})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
@@ -87,9 +87,10 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 	// 결과가 성공하면 update
 	if r.Result {
 		C.ecall_pay_w(C.uint(uint32(channelId)), C.uint(uint32(amount)))
+		ctx.JSON(http.StatusOK, gin.H{"success": r.Result})
+	}else{
+		ctx.JSON(http.StatusBadRequest, gin.H{"success": r.Result})
 	}
-
-	ctx.JSON(http.StatusOK, gin.H{"sucess": r.Result})
 }
 
 func PaymentToServerChannelHandler(ctx *gin.Context) {
