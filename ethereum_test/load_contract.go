@@ -8,22 +8,16 @@ import (
 	"log"
 )
 
-func main(){
+func main() {
 	client, err := ethclient.Dial("ws://141.223.121.139:8881")
 	if err != nil {
 		log.Fatal(err)
 	}
-	address := common.HexToAddress("0xe8ff3ac1ca790a4656a34a0a82442d15ea24b3f7aa75bfa6f15d003804bb306a")
-	instance, err := instapayContract.NewInstapay(address , client)
+	address := common.HexToAddress("0xD8B5088356F0F6B813a97E0A8DEd3Bb4f7a7e8d6")
+	instance, err := instapayContract.NewInstapay(address, client)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	readme, err := instance.Readme(nil)
-	if err != nil {
-		fmt.Printf("ERROR 2: ")
-		log.Fatal(err)
-	}
-
-	fmt.Println(readme)
+	fmt.Println("contract is loaded")
+	_ = instance
 }

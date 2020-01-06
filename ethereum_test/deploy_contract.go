@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"log"
-	store "github.com/sslab-instapay/instapay-tee-client/contract"
+	instapayContract "github.com/sslab-instapay/instapay-tee-client/contracts"
 	"math/big"
 	"fmt"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -41,7 +41,7 @@ func main(){
 	auth.GasLimit = uint64(300000) // in units
 	auth.GasPrice = gasPrice
 
-	contract, _ :=store.NewContract(fromAddress, nil)
+	contract, _ := instapayContract.NewInstapay(fromAddress, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
