@@ -7,7 +7,6 @@ import (
 
 type Account struct {
 	PublicKeyAddress string `json:"publicKeyAddress"`
-	PrivateKey       string
 	Balance          big.Float `json:"balance"`
 }
 

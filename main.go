@@ -9,20 +9,19 @@ package main
 import "C"
 
 import (
+	"flag"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/sslab-instapay/instapay-tee-client/config"
 	instapayGrpc "github.com/sslab-instapay/instapay-tee-client/grpc"
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
-	"net"
-	"log"
-	"fmt"
-	"google.golang.org/grpc"
-	"github.com/gin-gonic/gin"
 	"github.com/sslab-instapay/instapay-tee-client/router"
+	"github.com/sslab-instapay/instapay-tee-client/service"
+	"google.golang.org/grpc"
+	"log"
+	"net"
 	"os"
 	"strconv"
-	"flag"
-	"github.com/sslab-instapay/instapay-tee-client/service"
-	"github.com/sslab-instapay/instapay-tee-client/config"
-	"github.com/sslab-instapay/instapay-tee-client/repository"
 )
 
 func startGrpcServer(){
@@ -83,47 +82,6 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func LoadDataToTEE(){
-	// TODO 데이터 베이스 데이터를 TEE에 로드하자 (Account, Channel)
-	account := config.GetAccountConfig()
-
-	pubKey := account.PublicKeyAddress[2:]
-	privKey := account.PrivateKey
-
-	teePublicKey := []C.uchar(pubKey)
-	teePrivateKey := []C.uchar(privKey)
-
-	C.ecall_preset_account_w(&teePublicKey[0], &teePrivateKey[0])
-
-	channelList, err := repository.GetOpenedChannelList()
-	if err != nil{
-		log.Println(err)
-	}
-
-	for _, channel := range channelList  {
-		myAddress := []C.uchar(channel.MyAddress)
-		otherAddress := []C.uchar(channel.OtherAddress)
-		otherIpAddress := []C.uchar(channel.OtherIp)
-
-		var ChannelType C.uint
-		var ChannelStatus C.uint
-
-		if channel.Type == "IN" {
-			ChannelType = 1
-		} else if channel.Type == "OUT" {
-			ChannelType = 0
-		}
-
-		if channel.Status == "IDLE" {
-			ChannelStatus = 0
-		} else if channel.Status == "PRE_UPDATE" {
-			ChannelStatus = 1
-		} else if channel.Status == "POST_UPDATE" {
-			ChannelStatus = 2
-		} else if channel.Status == "CLOSED" {
-			ChannelStatus = 3
-		}
-		C.ecall_load_channel_data_w(C.uint(channel.ChannelId), ChannelType, ChannelStatus, &myAddress[0], C.uint(channel.MyDeposit), C.uint(channel.OtherDeposit), C.uint(channel.MyBalance), C.uint(channel.LockedBalance), &otherAddress[0], &otherIpAddress[0], C.uint(channel.OtherPort))
-	}
-
-	log.Println("--- TEE Data Load Successfully!!--- ")
+	// TODO seal 코드 들어가기
+	config.SetAccountConfig("0x222")
 }
