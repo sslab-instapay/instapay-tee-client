@@ -38,6 +38,7 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	if err != nil{
 		log.Println(err)
 	}
+	//TODO Seal된 데이터에서 공개키 주소
 	account := config.GetAccountConfig()
 	address := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress)
 	nonce, err := client.PendingNonceAt(context.Background(), address)
@@ -75,7 +76,7 @@ func SendCloseChannelTransaction(channelId int64) {
 	if err != nil {
 		log.Println(err)
 	}
-
+	//TODO Seal된 데이터에서 공개키 주소
 	address := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress)
 	nonce, err := client.PendingNonceAt(context.Background(), address)
 	if err != nil {
@@ -170,8 +171,9 @@ func ListenContractEvent() {
 func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 
 	account := config.GetAccountConfig()
-	// 내가 리시버 즉 IN 채널
 	log.Println("----- Handle Create Channel Event ----")
+
+	// TODO seal된 데이터에서 공개키.
 	if event.Receiver.String() == config.GetAccountConfig().PublicKeyAddress {
 		// CASE IN CHANNEL
 		channelId := C.uint(uint32(event.Id))
@@ -251,6 +253,7 @@ func HandleEjectEvent(event model.EjectEvent) {
 
 func GetBalance() (big.Float, error) {
 
+	// TODO seal된 데이터에서 공개키 주소.
 	account := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress)
 	client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
 

@@ -72,8 +72,7 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 	return &clientPb.Result{PaymentNumber: in.PaymentNumber, Result: true}, nil
 }
 
-// TODO result 변경.
-func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.ChannelPayment) (*clientPb.Result, error) {
+func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.ChannelPayment) (*clientPb.DirectPaymentResult, error) {
 	log.Println("----Direct Channel Payment Request Receive----")
 	C.ecall_pay_w(C.uint(uint32(in.ChannelId)), C.uint(uint32(in.Amount)))
 	log.Println("----Direct Channel Payment Request End----")
@@ -82,6 +81,6 @@ func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.Chan
 	fmt.Println(C.ecall_get_balance_w(C.uint(2)))
 	fmt.Println(time.Since(controller.ExecutionTime))
 
-	// TODO 리턴 값 변경.
-	return &clientPb.Result{PaymentNumber: in.Amount, Result: true}, nil
+
+	return &clientPb.DirectPaymentResult{Result: true}, nil
 }

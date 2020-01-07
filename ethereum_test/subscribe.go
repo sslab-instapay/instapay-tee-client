@@ -5,14 +5,14 @@ import (
 	"log"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	instapay "github.com/sslab-instapay/instapay-go-client/contract"
+	instapay "github.com/sslab-instapay/instapay-tee-client/contracts"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"strings"
-	"github.com/sslab-instapay/instapay-go-client/model"
-	"github.com/sslab-instapay/instapay-go-client/repository"
-	"github.com/sslab-instapay/instapay-go-client/config"
+	"github.com/sslab-instapay/instapay-tee-client/model"
+	"github.com/sslab-instapay/instapay-tee-client/repository"
+	"github.com/sslab-instapay/instapay-tee-client/config"
 	)
 
 var EthereumConfig = map[string]string{

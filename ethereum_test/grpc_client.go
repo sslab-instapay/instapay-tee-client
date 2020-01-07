@@ -4,7 +4,7 @@ import (
 	"google.golang.org/grpc"
 	"log"
 		"time"
-	pb "github.com/sslab-instapay/instapay-go-client/proto/client"
+	pb "github.com/sslab-instapay/instapay-tee-client/proto/client"
 	"context"
 )
 

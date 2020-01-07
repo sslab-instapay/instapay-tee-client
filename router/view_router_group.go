@@ -44,15 +44,5 @@ func RegisterViewRouter(router *gin.Engine) {
 			}
 			context.HTML(http.StatusOK, "closedChannel.tmpl", gin.H{"closedChannelList": closedChannelList})
 		})
-
-		// Pay 페이지
-		viewRouter.GET("channels/pay", func(context *gin.Context) {
-			channelIdList, err := repository.GetChannelIdList()
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			context.HTML(http.StatusOK, "pay.tmpl", gin.H{"channelIdList": channelIdList})
-		})
 	}
 }

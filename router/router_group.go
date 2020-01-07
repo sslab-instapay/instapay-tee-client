@@ -16,5 +16,7 @@ func RegisterChannelRouter(router *gin.Engine) {
 		channelRouter.POST("close", controller.CloseChannelHandler)
 
 		channelRouter.POST("server", controller.PaymentToServerChannelHandler)
+
+		channelRouter.POST("eject", controller.EjectChannelHandler)
 	}
 }
