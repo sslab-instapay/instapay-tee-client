@@ -43,7 +43,6 @@ func startClientWebServer(){
 
 	defaultRouter.Use(CORSMiddleware())
 	router.RegisterRestRouter(defaultRouter)
-	router.RegisterChannelRouter(defaultRouter)
 	router.RegisterViewRouter(defaultRouter)
 
 	defaultRouter.Run(":" + os.Getenv("port"))
