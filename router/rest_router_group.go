@@ -19,7 +19,13 @@ func RegisterRestRouter(router *gin.Engine) {
 	channelRouter := router.Group("channel")
 	{
 		channelRouter.GET("list", controller.GetChannelListHandler)
-		channelRouter.POST("eject", controller.EjectChannelHandler)
-		channelRouter.POST("direct", controller.DirectPayChannelHandler)
+	}
+	channelRequestRouter := router.Group("channel/requests")
+	{
+		channelRequestRouter.POST("open", controller.OpenChannelHandler)
+		channelRequestRouter.POST("direct", controller.DirectPayChannelHandler)
+		channelRequestRouter.POST("close", controller.CloseChannelHandler)
+		channelRequestRouter.POST("server", controller.PaymentToServerChannelHandler)
+		channelRequestRouter.POST("eject", controller.EjectChannelHandler)
 	}
 }
