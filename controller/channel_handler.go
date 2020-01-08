@@ -64,6 +64,8 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 	if err != nil{
 		log.Println(err)
 	}
+
+	// TODO tee로부터 채널 정보를 받든지 해야함.
 	channel, err := repository.GetChannelById(int64(channelId))
 	if err != nil{
 		log.Println(err)
@@ -138,6 +140,7 @@ func GetChannelListHandler(ctx *gin.Context) {
 	})
 }
 
+// TODO repository 변경에 따른 코드 변화 필요.
 func GetWalletInformationHandler(ctx *gin.Context) {
 
 	account := config.GetAccountConfig()

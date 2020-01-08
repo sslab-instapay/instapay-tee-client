@@ -253,7 +253,6 @@ func HandleEjectEvent(event model.EjectEvent) {
 
 func GetBalance() (big.Float, error) {
 
-	// TODO seal된 데이터에서 공개키 주소.
 	account := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress)
 	client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
 
