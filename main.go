@@ -9,20 +9,39 @@ package main
 import "C"
 
 import (
-	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sslab-instapay/instapay-tee-client/config"
 	instapayGrpc "github.com/sslab-instapay/instapay-tee-client/grpc"
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
 	"github.com/sslab-instapay/instapay-tee-client/router"
-	"github.com/sslab-instapay/instapay-tee-client/service"
-	"google.golang.org/grpc"
+		"google.golang.org/grpc"
 	"log"
 	"net"
 	"os"
 	"strconv"
+	"unsafe"
+	"flag"
+	"github.com/sslab-instapay/instapay-tee-client/service"
 )
+
+func main() {
+	C.initialize_enclave()
+	portNum := flag.String("port", "3001", "port number")
+	grpcPortNum := flag.String("grpc_port", "50001", "grpc_port number")
+	databaseName := flag.String("database_name", "instapay-client", "database Name")
+
+	flag.Parse()
+
+	os.Setenv("port", *portNum)
+	os.Setenv("grpc_port", *grpcPortNum)
+	os.Setenv("database_name", *databaseName)
+	LoadDataToTEE()
+	go service.ListenContractEvent()
+	go startGrpcServer()
+	startClientWebServer()
+
+}
 
 func startGrpcServer(){
 	log.Println("---Start Grpc Server---")
@@ -47,24 +66,6 @@ func startClientWebServer(){
 	defaultRouter.Run(":" + os.Getenv("port"))
 }
 
-func main() {
-	C.initialize_enclave()
-	portNum := flag.String("port", "3001", "port number")
-	grpcPortNum := flag.String("grpc_port", "50001", "grpc_port number")
-	databaseName := flag.String("database_name", "instapay-client", "database Name")
-
-	flag.Parse()
-
-	os.Setenv("port", *portNum)
-	os.Setenv("grpc_port", *grpcPortNum)
-	os.Setenv("database_name", *databaseName)
-	LoadDataToTEE()
-	go service.ListenContractEvent()
-	go startGrpcServer()
-	startClientWebServer()
-
-}
-
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
@@ -81,6 +82,19 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func LoadDataToTEE(){
-	// TODO seal 코드 들어가기
-	config.SetAccountConfig("0x222")
+	C.ecall_load_account_data_w()
+	C.ecall_load_channel_data_w()
+
+	var paddrs unsafe.Pointer
+
+	paddrs = C.ecall.get_public_addrs_w()
+	paddrSize := 20
+	paddrSlice := (*[1 << 30]C.address)(unsafe.Pointer(paddrs))[:paddrSize:paddrSize]
+
+	var convertedAddress string
+	convertedAddress = fmt.Sprintf("%02x", paddrSlice[0].addr)
+	convertedAddress = "0x" + convertedAddress
+	fmt.Println("---- Public Key Address ---")
+	fmt.Println(convertedAddress)
+	config.SetAccountConfig(convertedAddress)
 }

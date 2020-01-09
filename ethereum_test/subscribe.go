@@ -93,22 +93,8 @@ func main() {
 
 func HandleCreateChannelEvent(event model.CreateChannelEvent) {
 
-	var channel = model.Channel{ChannelId: event.Id.Int64(),
-		Status: model.IDLE, MyAddress: event.Receiver.String(),
-		MyBalance: 0, MyDeposit: 0, OtherAddress: event.Owner.String()}
-	// TODO server에 보냄
-
-	repository.InsertChannel(channel)
 }
 
 func HandleCloseChannelEvent(event model.CloseChannelEvent) {
-	channel, err := repository.GetChannelById(event.Id.Int64())
 
-	if err != nil {
-		log.Println("there is no channel")
-		return
-	}
-
-	channel.Status = model.CLOSED
-	repository.UpdateChannel(channel)
 }
