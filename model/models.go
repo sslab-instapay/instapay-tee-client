@@ -6,7 +6,7 @@ import (
 )
 
 type Account struct {
-	PublicKeyAddress string `json:"publicKeyAddress"`
+	PublicKeyAddress string    `json:"publicKeyAddress"`
 	Balance          big.Float `json:"balance"`
 }
 
@@ -21,7 +21,8 @@ type ChannelStatus string
 
 const (
 	// 0, 1, 2, 3
-	IDLE        ChannelStatus = "IDLE"
+	PENDING     ChannelStatus = "PENDING"
+	IDLE                      = "IDLE"
 	PRE_UPDATE                = "PRE_UPDATE"
 	POST_UPDATE               = "POST_UPDATE"
 	CLOSED                    = "CLOSED"
