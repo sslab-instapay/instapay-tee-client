@@ -69,8 +69,8 @@ func OnchainPaymentHandler(ctx *gin.Context){
 	for i := C.uint(0); i < SigLen; i++ {
 	    fmt.Printf("%02x", s[i])
 	}
-
-	convertedRawTx := C.GoString(s)
+	var convertedRawTx string
+	convertedRawTx = fmt.Sprintf("%02x", s)
 
 	rawTxBytes, err := hex.DecodeString(convertedRawTx)
 	tx := new(types.Transaction)
@@ -80,5 +80,5 @@ func OnchainPaymentHandler(ctx *gin.Context){
 		log.Println(err)
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "payment Success"})
+	ctx.JSON(http.StatusOK, gin.H{"message": "payment success"})
 }

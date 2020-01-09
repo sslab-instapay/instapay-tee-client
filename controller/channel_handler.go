@@ -65,7 +65,7 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 		log.Println(err)
 	}
 
-	// TODO tee로부터 채널 정보를 받든지 해야함.
+	// TODO 아이피 정보를 어떻게 저장할 것인지 구현 후.
 	channel, err := repository.GetChannelById(int64(channelId))
 	if err != nil{
 		log.Println(err)
