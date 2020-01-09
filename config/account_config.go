@@ -8,7 +8,6 @@ import (
 
 var personalAccount = model.Account{}
 
-// TODO 메인에서 로드할 때 쓰는 코드
 func SetAccountConfig(publicKey string) model.Account{
 	personalAccount.PublicKeyAddress = publicKey
 	return personalAccount
