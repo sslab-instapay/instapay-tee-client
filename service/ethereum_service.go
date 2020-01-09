@@ -233,18 +233,16 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 }
 
 func HandleCloseChannelEvent(event model.CloseChannelEvent) {
-	channel, err := repository.GetChannelById(event.Id)
 
-	if err != nil {
-		log.Println("there is no channel")
-	}
-	log.Println("----- Handle Close Channel Event ----")
-	//TODO Close channel Event로 ..
-	channel.Status = model.CLOSED
-	_, err = repository.UpdateChannel(channel)
-	if err != nil {
-		log.Println(err)
-	}
+	log.Println("----- Handle Close Channel Event -----")
+	channelId := C.uint(uint32(event.Id))
+	ownerBal := C.uint(uint32(event.Ownerbal))
+	receiverBal := C.uint(uint32(event.Receiverbal))
+
+	log.Println("----- Start Close Channel Event -----")
+	C.ecall_receive_close_channel_w(channelId, ownerBal, receiverBal)
+	log.Println("----- End Close Channel Event -----")
+
 }
 
 func HandleEjectEvent(event model.EjectEvent) {
