@@ -130,7 +130,7 @@ func PaymentToServerChannelHandler(ctx *gin.Context) {
 
 func GetChannelListHandler(ctx *gin.Context) {
 
-	channelList, err := repository.GetChannelList()
+	channelList, err := repository.GetOpenedChannelList()
 	if err != nil {
 		log.Println(err)
 	}

@@ -23,7 +23,7 @@ func RegisterViewRouter(router *gin.Engine) {
 
 		// channel 리스트
 		viewRouter.GET("channels/list", func(context *gin.Context) {
-			channelList, err := repository.GetChannelList()
+			channelList, err := repository.GetOpenedChannelList()
 			if err != nil {
 				log.Fatal(err)
 			}

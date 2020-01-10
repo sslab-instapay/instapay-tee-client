@@ -12,68 +12,22 @@ import (
 	"reflect"
 )
 
-func GetChannelList() ([]model.Channel, error) {
-
-	database, err := db.GetDatabase()
-	if err != nil {
-		return nil, err
-	}
-
-	collection := database.Collection("channels")
-
-	cur, err := collection.Find(context.TODO(), bson.D{})
-
-	if err != nil {
-		return nil, err
-	}
-	var channels []model.Channel
-
-	defer cur.Close(context.Background())
-	for cur.Next(context.Background()) {
-		var channel model.Channel
-		err := cur.Decode(&channel)
-		if err != nil {
-			log.Println(err)
-		}
-		// To get the raw bson bytes use cursor.Current
-		channels = append(channels, channel)
-	}
-
-	return channels, nil
-}
-
 func GetAllChannelsLockedBalance() (int64, error) {
 
-	database, err := db.GetDatabase()
-	if err != nil {
-		return 0, err
+	var ochs unsafe.Pointer
+	var lockedBalances int64
+
+	ochs = C.ecall_get_open_channels_w()
+	channelSize := 68
+	channelSlice := (*[1 << 30]C.channel)(unsafe.Pointer(ochs))[:channelSize:channelSize]
+
+	openChannelNumbers := C.ecall_get_num_open_channels()
+
+	for i := 0; i < openChannelNumbers; i++{
+		lockedBalances += int64(channelSlice[i].m_locked_balance)
 	}
 
-	filter := bson.M{"channelStatus": bson.M{
-		"$not": bson.M{
-			"$eq": 3,
-		},
-	}}
-	collection := database.Collection("channels")
-
-	cur, err := collection.Find(context.TODO(), filter)
-
-	if err != nil {
-		return 0, err
-	}
-	var lockedBalance int64
-
-	defer cur.Close(context.Background())
-	for cur.Next(context.Background()) {
-		var channel model.Channel
-		err := cur.Decode(&channel)
-		if err != nil {
-			log.Println(err)
-		}
-		lockedBalance += channel.LockedBalance
-	}
-
-	return lockedBalance, nil
+	return lockedBalances, nil
 }
 
 func GetClosedChannelList() ([]model.Channel, error) {
