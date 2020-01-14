@@ -1,5 +1,6 @@
 package repository
 
+import "C"
 import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
@@ -7,195 +8,150 @@ import (
 	"github.com/sslab-instapay/instapay-tee-client/model"
 	"github.com/sslab-instapay/instapay-tee-client/db"
 	"fmt"
-	"sync"
+	"unsafe"
+	"reflect"
 )
-
-func GetChannelList() ([]model.Channel, error) {
-
-	database, err := db.GetDatabase()
-	if err != nil {
-		return nil, err
-	}
-
-	collection := database.Collection("channels")
-
-	cur, err := collection.Find(context.TODO(), bson.D{})
-
-	if err != nil {
-		return nil, err
-	}
-	var channels []model.Channel
-
-	defer cur.Close(context.Background())
-	for cur.Next(context.Background()) {
-		var channel model.Channel
-		err := cur.Decode(&channel)
-		if err != nil {
-			log.Println(err)
-		}
-		// To get the raw bson bytes use cursor.Current
-		channels = append(channels, channel)
-	}
-
-	return channels, nil
-}
 
 func GetAllChannelsLockedBalance() (int64, error) {
 
-	database, err := db.GetDatabase()
-	if err != nil {
-		return 0, err
+	var ochs unsafe.Pointer
+	var lockedBalances int64
+
+	ochs = C.ecall_get_open_channels_w()
+	channelSize := 68
+	channelSlice := (*[1 << 30]C.channel)(unsafe.Pointer(ochs))[:channelSize:channelSize]
+
+	openChannelNumbers := C.ecall_get_num_open_channels()
+
+	for i := 0; i < openChannelNumbers; i++ {
+		lockedBalances += int64(channelSlice[i].m_locked_balance)
 	}
 
-	filter := bson.M{"channelStatus": bson.M{
-		"$not": bson.M{
-			"$eq": 3,
-		},
-	}}
-	collection := database.Collection("channels")
-
-	cur, err := collection.Find(context.TODO(), filter)
-
-	if err != nil {
-		return 0, err
-	}
-	var lockedBalance int64
-
-	defer cur.Close(context.Background())
-	for cur.Next(context.Background()) {
-		var channel model.Channel
-		err := cur.Decode(&channel)
-		if err != nil {
-			log.Println(err)
-		}
-		lockedBalance += channel.LockedBalance
-	}
-
-	return lockedBalance, nil
-}
-
-func GetChannelIdList() ([]int64, error) {
-
-	database, err := db.GetDatabase()
-	if err != nil {
-		return nil, err
-	}
-
-	collection := database.Collection("channels")
-
-	cur, err := collection.Find(context.TODO(), bson.D{})
-
-	if err != nil {
-		return nil, err
-	}
-	var channelIds []int64
-
-	defer cur.Close(context.Background())
-	for cur.Next(context.Background()) {
-		var channel model.Channel
-		err := cur.Decode(&channel)
-		if err != nil {
-			log.Println(err)
-		}
-		// To get the raw bson bytes use cursor.Current
-		channelIds = append(channelIds, channel.ChannelId)
-	}
-
-	return channelIds, nil
+	return lockedBalances, nil
 }
 
 func GetClosedChannelList() ([]model.Channel, error) {
 
-	database, err := db.GetDatabase()
-	if err != nil {
-		return nil, err
-	}
+	var channelList []model.Channel
+	var cchs unsafe.Pointer
 
-	filter := bson.M{"channelStatus": model.CLOSED}
-	collection := database.Collection("channels")
+	cchs = C.ecall_get_closed_channels_w()
+	channelStructSize := 68
+	channelSlice := (*[1 << 30]C.channel)(unsafe.Pointer(cchs))[:channelStructSize:channelStructSize]
 
-	cur, err := collection.Find(context.TODO(), filter)
+	closedChannelNumbers := C.ecall_get_num_closed_channels_w()
 
-	if err != nil {
-		return nil, err
-	}
-	var channels []model.Channel
-
-	defer cur.Close(context.Background())
-	for cur.Next(context.Background()) {
+	for i := 0; i < closedChannelNumbers; i++ {
 		var channel model.Channel
-		err := cur.Decode(&channel)
-		if err != nil {
-			log.Println(err)
+		channel.ChannelId = int64(channelSlice[i].m_id)
+		if channelSlice[i].m_is_in == 0 {
+			channel.Type = model.IN
+		} else {
+			channel.Type = model.OUT
 		}
-		channels = append(channels, channel)
-	}
+		switch channelSlice[i].m_status {
+		case 0:
+			channel.Status = model.PENDING
+		case 1:
+			channel.Status = model.IDLE
+		case 2:
+			channel.Status = model.PRE_UPDATE
+		case 3:
+			channel.Status = model.POST_UPDATE
+		case 4:
+			channel.Status = model.CLOSED
+		}
+		channel.MyDeposit = channelSlice[i].m_my_deposit
+		channel.OtherDeposit = channelSlice[i].m_other_deposit
+		channel.MyBalance = channelSlice[i].m_my_balance
+		channel.LockedBalance = channelSlice[i].m_locked_balance
 
-	return channels, nil
+		var sig *C.uchar = &(channelSlice[i].m_my_addr[0])
+		hdr := reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(sig)),
+			Len:  int(20),
+			Cap:  int(20),
+		}
+		s := *(*[]C.uchar)(unsafe.Pointer(&hdr))
+		var myAddress string
+		myAddress = fmt.Sprintf("%02x", s)
+		channel.MyAddress = "0x" + myAddress
+
+		var sig1 *C.uchar = &(channelSlice[i].m_other_addr[0])
+		hdr1 := reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(sig1)),
+			Len:  int(20),
+			Cap:  int(20),
+		}
+		s1 := *(*[]C.uchar)(unsafe.Pointer(&hdr1))
+		var otherAddress string
+		otherAddress = fmt.Sprint("%02x", s1)
+		channel.OtherAddress = "0x" + otherAddress
+		channelList = append(channelList, channel)
+	}
+	return channelList, nil
 }
 
 func GetOpenedChannelList() ([]model.Channel, error) {
 
-	database, err := db.GetDatabase()
-	if err != nil {
-		return nil, err
-	}
+	var channelList []model.Channel
+	var ochs unsafe.Pointer
 
-	filter := bson.M{"channelStatus": bson.M{
-		"$not": bson.M{
-			"$eq": model.CLOSED,
-		},
-	}}
-	collection := database.Collection("channels")
+	ochs = C.ecall_get_open_channels_w()
+	channelSize := 68
+	channelSlice := (*[1 << 30]C.channel)(unsafe.Pointer(ochs))[:channelSize:channelSize]
 
-	cur, err := collection.Find(context.TODO(), filter)
+	openChannelNumbers := C.ecall_get_num_open_channels()
 
-	if err != nil {
-		return nil, err
-	}
-	var channels []model.Channel
-
-	defer cur.Close(context.Background())
-	for cur.Next(context.Background()) {
+	for i := 0; i < openChannelNumbers; i++ {
 		var channel model.Channel
-		err := cur.Decode(&channel)
-		if err != nil {
-			log.Println(err)
+		channel.ChannelId = int64(channelSlice[i].m_id)
+		if channelSlice[i].m_is_in == 0 {
+			channel.Type = model.IN
+		} else {
+			channel.Type = model.OUT
 		}
-		// To get the raw bson bytes use cursor.Current
-		channels = append(channels, channel)
-	}
-
-	return channels, nil
-}
-
-func GetChannelsByChannelType(channelType model.ChannelType) ([]model.Channel, error){
-
-	database, err := db.GetDatabase()
-	if err != nil {
-		return nil, err
-	}
-
-	filter := bson.M{
-		"channelType": channelType,
-	}
-
-	collection := database.Collection("channels")
-	cur, err := collection.Find(context.TODO(), filter)
-
-	var channels []model.Channel
-	defer cur.Close(context.Background())
-	for cur.Next(context.Background()) {
-		var channel model.Channel
-		err := cur.Decode(&channel)
-		if err != nil {
-			log.Println(err)
+		switch channelSlice[i].m_status {
+		case 0:
+			channel.Status = model.PENDING
+		case 1:
+			channel.Status = model.IDLE
+		case 2:
+			channel.Status = model.PRE_UPDATE
+		case 3:
+			channel.Status = model.POST_UPDATE
+		case 4:
+			channel.Status = model.CLOSED
 		}
-		// To get the raw bson bytes use cursor.Current
-		channels = append(channels, channel)
-	}
+		channel.MyDeposit = channelSlice[i].m_my_deposit
+		channel.OtherDeposit = channelSlice[i].m_other_deposit
+		channel.MyBalance = channelSlice[i].m_my_balance
+		channel.LockedBalance = channelSlice[i].m_locked_balance
 
-	return channels, nil
+		var sig *C.uchar = &(channelSlice[i].m_my_addr[0])
+		hdr := reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(sig)),
+			Len:  int(20),
+			Cap:  int(20),
+		}
+		s := *(*[]C.uchar)(unsafe.Pointer(&hdr))
+		var myAddress string
+		myAddress = fmt.Sprintf("%02x", s)
+		channel.MyAddress = "0x" + myAddress
+
+		var sig1 *C.uchar = &(channelSlice[i].m_other_addr[0])
+		hdr1 := reflect.SliceHeader{
+			Data: uintptr(unsafe.Pointer(sig1)),
+			Len:  int(20),
+			Cap:  int(20),
+		}
+		s1 := *(*[]C.uchar)(unsafe.Pointer(&hdr1))
+		var otherAddress string
+		otherAddress = fmt.Sprint("%02x", s1)
+		channel.OtherAddress = "0x" + otherAddress
+		channelList = append(channelList, channel)
+	}
+	return channelList, nil
 }
 
 func GetChannelById(channelId int64) (model.Channel, error) {
@@ -216,52 +172,5 @@ func GetChannelById(channelId int64) (model.Channel, error) {
 	if err := singleRecord.Decode(&channel); err != nil {
 		log.Println(err)
 	}
-	return channel, nil
-}
-
-
-func UpdateChannel(channel model.Channel) (model.Channel, error) {
-
-	database, err := db.GetDatabase()
-	if err != nil {
-		return model.Channel{}, err
-	}
-
-
-	collection := database.Collection("channels")
-
-	filter := bson.M{"channelId": channel.ChannelId}
-	update := bson.M{"$set": bson.M{"channelStatus": channel.Status, "myBalance": channel.MyBalance, "otherAddress": channel.OtherAddress, "otherPort": channel.OtherPort, "otherIp": channel.OtherIp, "lockedBalance": channel.LockedBalance}}
-
-	var rwMutex = new(sync.RWMutex)
-	rwMutex.Lock()
-	res, err := collection.UpdateOne(context.TODO(), filter, update)
-	if err != nil {
-		log.Println(err)
-	}
-	rwMutex.Unlock()
-
-	fmt.Println(res.ModifiedCount)
-
-	return channel, nil
-
-}
-
-func InsertChannel(channel model.Channel) (model.Channel, error) {
-
-	database, err := db.GetDatabase()
-	if err != nil {
-		return model.Channel{}, err
-	}
-
-	collection := database.Collection("channels")
-
-	insertResult, err := collection.InsertOne(context.TODO(), channel)
-	if err != nil {
-		return model.Channel{}, err
-	}
-
-	fmt.Println(insertResult.InsertedID)
-
 	return channel, nil
 }

@@ -1,44 +1,23 @@
 package repository
 
+import "C"
 import (
-	"github.com/sslab-instapay/instapay-tee-client/model"
-	"github.com/sslab-instapay/instapay-tee-client/db"
-	"log"
-	"go.mongodb.org/mongo-driver/bson"
-	"context"
+							"unsafe"
 )
 
 func GetAllDepositValue() (int64, error) {
 
-	database, err := db.GetDatabase()
-	if err != nil {
-		return 0, err
-	}
-
-	filter := bson.M{"channelStatus": bson.M{
-		"$not": bson.M{
-			"$eq": model.CLOSED,
-		},
-	}, "channelType": bson.M{
-		"$eq": model.IN,
-	}}
-	collection := database.Collection("channels")
-
-	cur, err := collection.Find(context.TODO(), filter)
-
-	if err != nil {
-		return 0, err
-	}
+	var ochs unsafe.Pointer
 	var depositValue int64
 
-	defer cur.Close(context.Background())
-	for cur.Next(context.Background()) {
-		var channel model.Channel
-		err := cur.Decode(&channel)
-		if err != nil {
-			log.Println(err)
-		}
-		depositValue += channel.MyDeposit
+	ochs = C.ecall_get_open_channels_w()
+	channelSize := 68
+	channelSlice := (*[1 << 30]C.channel)(unsafe.Pointer(ochs))[:channelSize:channelSize]
+
+	openChannelNumbers := C.ecall_get_num_open_channels()
+
+	for i := 0; i < openChannelNumbers; i++{
+		depositValue += int64(channelSlice[i].m_my_deposit)
 	}
 
 	return depositValue, nil
@@ -46,34 +25,17 @@ func GetAllDepositValue() (int64, error) {
 
 func GetOffChainBalance() (int64, error) {
 
-	database, err := db.GetDatabase()
-	if err != nil {
-		return 0, err
+	var ochs unsafe.Pointer
+	var offchainBalance int64
+
+	ochs = C.ecall_get_open_channels_w()
+	channelSize := 68
+	channelSlice := (*[1 << 30]C.channel)(unsafe.Pointer(ochs))[:channelSize:channelSize]
+
+	openChannelNumbers := C.ecall_get_num_open_channels()
+
+	for i := 0; i < openChannelNumbers; i++{
+		offchainBalance += int64(channelSlice[i].m_my_balance)
 	}
-
-	filter := bson.M{"channelStatus": bson.M{
-		"$not": bson.M{
-			"$eq": model.CLOSED,
-		},
-	}}
-	collection := database.Collection("channels")
-
-	cur, err := collection.Find(context.TODO(), filter)
-
-	if err != nil {
-		return 0, err
-	}
-	var myBalance int64
-
-	defer cur.Close(context.Background())
-	for cur.Next(context.Background()) {
-		var channel model.Channel
-		err := cur.Decode(&channel)
-		if err != nil {
-			log.Println(err)
-		}
-		myBalance += channel.MyBalance
-	}
-
-	return myBalance, nil
+	return offchainBalance, nil
 }
