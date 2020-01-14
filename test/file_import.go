@@ -8,13 +8,13 @@ import (
 func main(){
 	util.SetPeerInformation("../data/peer/peer.json")
 
-	_, err := util.GetPeerInformationByAddress("0xq2eqer2qeqwtqwet")
+	_, _, err := util.GetPeerInformationByAddress("0xq2eqer2qeqwtqwet")
 	if err != nil{
 		log.Fatal(err)
 	}
 
-	util.AddPeerInformation("0x4451eerjg9o2eqwe", "141.223.423.21", 50001)
+	util.AddOrUpdatePeerInformation("0x4451eerjg9o2eqwe", "141.223.423.21", 50001)
 
-	util.ExportInformationToFile()
+	util.ExportInformationToFile("../data/peer/peer.json")
 
 }

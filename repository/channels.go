@@ -23,7 +23,7 @@ func GetAllChannelsLockedBalance() (int64, error) {
 
 	openChannelNumbers := C.ecall_get_num_open_channels()
 
-	for i := 0; i < openChannelNumbers; i++{
+	for i := 0; i < openChannelNumbers; i++ {
 		lockedBalances += int64(channelSlice[i].m_locked_balance)
 	}
 
@@ -41,12 +41,12 @@ func GetClosedChannelList() ([]model.Channel, error) {
 
 	closedChannelNumbers := C.ecall_get_num_closed_channels_w()
 
-	for i := 0; i < closedChannelNumbers; i++{
+	for i := 0; i < closedChannelNumbers; i++ {
 		var channel model.Channel
 		channel.ChannelId = int64(channelSlice[i].m_id)
-		if channelSlice[i].m_is_in == 0{
+		if channelSlice[i].m_is_in == 0 {
 			channel.Type = model.IN
-		}else{
+		} else {
 			channel.Type = model.OUT
 		}
 		switch channelSlice[i].m_status {
@@ -69,8 +69,8 @@ func GetClosedChannelList() ([]model.Channel, error) {
 		var sig *C.uchar = &(channelSlice[i].m_my_addr[0])
 		hdr := reflect.SliceHeader{
 			Data: uintptr(unsafe.Pointer(sig)),
-			Len: int(20),
-			Cap: int(20),
+			Len:  int(20),
+			Cap:  int(20),
 		}
 		s := *(*[]C.uchar)(unsafe.Pointer(&hdr))
 		var myAddress string
@@ -80,8 +80,8 @@ func GetClosedChannelList() ([]model.Channel, error) {
 		var sig1 *C.uchar = &(channelSlice[i].m_other_addr[0])
 		hdr1 := reflect.SliceHeader{
 			Data: uintptr(unsafe.Pointer(sig1)),
-			Len: int(20),
-			Cap: int(20),
+			Len:  int(20),
+			Cap:  int(20),
 		}
 		s1 := *(*[]C.uchar)(unsafe.Pointer(&hdr1))
 		var otherAddress string
@@ -103,12 +103,12 @@ func GetOpenedChannelList() ([]model.Channel, error) {
 
 	openChannelNumbers := C.ecall_get_num_open_channels()
 
-	for i := 0; i < openChannelNumbers; i++{
+	for i := 0; i < openChannelNumbers; i++ {
 		var channel model.Channel
 		channel.ChannelId = int64(channelSlice[i].m_id)
-		if channelSlice[i].m_is_in == 0{
+		if channelSlice[i].m_is_in == 0 {
 			channel.Type = model.IN
-		}else{
+		} else {
 			channel.Type = model.OUT
 		}
 		switch channelSlice[i].m_status {
@@ -131,8 +131,8 @@ func GetOpenedChannelList() ([]model.Channel, error) {
 		var sig *C.uchar = &(channelSlice[i].m_my_addr[0])
 		hdr := reflect.SliceHeader{
 			Data: uintptr(unsafe.Pointer(sig)),
-			Len: int(20),
-			Cap: int(20),
+			Len:  int(20),
+			Cap:  int(20),
 		}
 		s := *(*[]C.uchar)(unsafe.Pointer(&hdr))
 		var myAddress string
@@ -142,8 +142,8 @@ func GetOpenedChannelList() ([]model.Channel, error) {
 		var sig1 *C.uchar = &(channelSlice[i].m_other_addr[0])
 		hdr1 := reflect.SliceHeader{
 			Data: uintptr(unsafe.Pointer(sig1)),
-			Len: int(20),
-			Cap: int(20),
+			Len:  int(20),
+			Cap:  int(20),
 		}
 		s1 := *(*[]C.uchar)(unsafe.Pointer(&hdr1))
 		var otherAddress string

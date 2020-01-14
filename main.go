@@ -23,6 +23,7 @@ import (
 	"unsafe"
 	"flag"
 	"github.com/sslab-instapay/instapay-tee-client/service"
+	"github.com/sslab-instapay/instapay-tee-client/util"
 )
 
 func main() {
@@ -30,12 +31,15 @@ func main() {
 	portNum := flag.String("port", "3001", "port number")
 	grpcPortNum := flag.String("grpc_port", "50001", "grpc_port number")
 	databaseName := flag.String("database_name", "instapay-client", "database Name")
+	peerFileDirectory := flag.String("peer_file_directory", "data/peer/peer.json", "dir")
 
 	flag.Parse()
 
 	os.Setenv("port", *portNum)
 	os.Setenv("grpc_port", *grpcPortNum)
 	os.Setenv("database_name", *databaseName)
+	os.Setenv("peer_file_directory", *peerFileDirectory)
+	LoadPeerInformation(os.Getenv("peer_file_directory"))
 	LoadDataToTEE()
 	go service.ListenContractEvent()
 	go startGrpcServer()
@@ -97,4 +101,8 @@ func LoadDataToTEE(){
 	fmt.Println("---- Public Key Address ---")
 	fmt.Println(convertedAddress)
 	config.SetAccountConfig(convertedAddress)
+}
+
+func LoadPeerInformation(directory string){
+	util.SetPeerInformation(directory)
 }
