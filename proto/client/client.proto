@@ -1,8 +1,8 @@
 syntax = "proto3";
 
 service Client {
-    rpc agreementRequest(AgreeRequestsMessage) returns (Result) {}
-    rpc updateRequest(UpdateRequestsMessage) returns (Result) {}
+    rpc agreementRequest(AgreeRequestsMessage) returns (AgreementResult) {}
+    rpc updateRequest(UpdateRequestsMessage) returns (UpdateResult) {}
     rpc confirmPayment(ConfirmRequestsMessage) returns (Result) {}
     rpc directChannelPayment(ChannelPayment) returns (DirectPaymentResult) {}
 }
@@ -10,15 +10,21 @@ service Client {
 message AgreeRequestsMessage {
     int64 paymentNumber = 1;
     ChannelPayments channelPayments = 2;
+    string originalMessage = 3;
+    string signature = 4;
 }
 
 message UpdateRequestsMessage{
     int64 paymentNumber = 1;
     ChannelPayments channelPayments = 2;
+    string originalMessage = 3;
+    string signature = 4;
 }
 
 message ConfirmRequestsMessage{
     int64 paymentNumber = 1;
+    string originalMessage = 2;
+    string signature = 3;
 }
 
 message ChannelPayment {
@@ -30,6 +36,20 @@ message ChannelPayment {
 
 message ChannelPayments {
     repeated ChannelPayment channelPayments = 1;
+}
+
+message AgreementResult{
+    int64 paymentNumber = 1;
+    bool result = 2;
+    string originalMessage = 3;
+    string signature = 4;
+}
+
+message UpdateResult{
+    int64 paymentNumber = 1;
+    bool result = 2;
+    string originalMessage = 3;
+    string signature = 4;
 }
 
 message Result {

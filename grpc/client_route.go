@@ -16,12 +16,13 @@ import (
 	"fmt"
 	"time"
 	"unsafe"
+	"reflect"
 )
 
 type ClientGrpc struct {
 }
 
-func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeRequestsMessage) (*clientPb.Result, error) {
+func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeRequestsMessage) (*clientPb.AgreementResult, error) {
 	// 동의한다는 메시지를 전달
 	channelPayments := in.ChannelPayments
 
@@ -34,14 +35,34 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 		amount = append(amount, C.int(int32(channelPayment.Amount)))
 	}
 
-	paymentNum := C.uint(uint32(in.PaymentNumber))
-	size := C.uint(len(channelIds))
-	C.ecall_go_pre_update_w(paymentNum, &channelIds[0], &amount[0], size)
+	//void ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
+	convertedOriginalMsg := &([]C.uchar(in.OriginalMessage)[0])
+	convertedSignatureMsg := &([]C.uchar(in.Signature)[0])
 
-	return &clientPb.Result{PaymentNumber: in.PaymentNumber, Result: true}, nil
+	var originalMsg *C.uchar
+	var signature *C.uchar
+	C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, originalMsg, signature)
+
+	hdr1 := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(originalMsg)),
+		Len:  int(44),
+		Cap:  int(44),
+	}
+	s1 := *(*[]C.uchar)(unsafe.Pointer(&hdr1))
+
+	hdr2 := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(signature)),
+		Len:  int(65),
+		Cap:  int(65),
+	}
+	s2 := *(*[]C.uchar)(unsafe.Pointer(&hdr2))
+	originalMessageStr := fmt.Sprintf("02x", s1)
+	signatureStr := fmt.Sprintf("02x", s2)
+
+	return &clientPb.AgreementResult{PaymentNumber: in.PaymentNumber, Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 }
 
-func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateRequestsMessage) (*clientPb.Result, error) {
+func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateRequestsMessage) (*clientPb.UpdateResult, error) {
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
 	channelPayments := in.ChannelPayments
 
@@ -54,16 +75,42 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 		amount = append(amount, C.int(int32(channelPayment.Amount)))
 	}
 
-	paymentNum := C.uint(uint32(in.PaymentNumber))
-	size := C.uint(uint32(len(channelIds)))
-	C.ecall_go_post_update_w(paymentNum, &channelIds[0], &amount[0], size)
+	// TODO 서명, 메시지 넣은 후 전송
+	//void ecall_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
 
-	return &clientPb.Result{PaymentNumber: in.PaymentNumber, Result: true}, nil
+	convertedOriginalMsg := &([]C.uchar(in.OriginalMessage)[0])
+	convertedSignatureMsg := &([]C.uchar(in.Signature)[0])
+
+	var originalMsg *C.uchar
+	var signature *C.uchar
+	C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, originalMsg, signature)
+
+	hdr1 := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(originalMsg)),
+		Len:  int(44),
+		Cap:  int(44),
+	}
+	s1 := *(*[]C.uchar)(unsafe.Pointer(&hdr1))
+
+	hdr2 := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(signature)),
+		Len:  int(65),
+		Cap:  int(65),
+	}
+	s2 := *(*[]C.uchar)(unsafe.Pointer(&hdr2))
+	originalMessageStr := fmt.Sprintf("02x", s1)
+	signatureStr := fmt.Sprintf("02x", s2)
+	C.ecall_go_post_update_w()
+
+	return &clientPb.UpdateResult{PaymentNumber: in.PaymentNumber, Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 }
 
 func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmRequestsMessage) (*clientPb.Result, error) {
 	log.Println("----ConfirmPayment Request Receive----")
-	C.ecall_go_idle_w(C.uint(uint32(in.PaymentNumber)))
+	//void ecall_go_idle_w(unsigned char *msg, unsigned char *signature);
+	convertedOriginalMsg := &([]C.uchar(in.OriginalMessage)[0])
+	convertedSignatureMsg := &([]C.uchar(in.Signature)[0])
+	C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
 	log.Println("----ConfirmPayment Request End----")
 
 	fmt.Println(C.ecall_get_balance_w(C.uint(1)))
