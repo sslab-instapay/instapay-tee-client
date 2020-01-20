@@ -24,6 +24,8 @@ message ConfirmRequestsMessage{
 message ChannelPayment {
     int64 channelId = 1;
     int64 amount = 2;
+    string originalMessage = 3;
+    string signature = 4;
 }
 
 message ChannelPayments {

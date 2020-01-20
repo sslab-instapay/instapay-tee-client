@@ -15,7 +15,7 @@ import (
 	"context"
 	"github.com/sslab-instapay/instapay-tee-client/model"
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
-)
+	)
 
 var ExecutionTime time.Time
 
@@ -75,9 +75,13 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
+	// pay_w 실행 후 상대에게 요청
+	var originalMessage *C.uchar
+	var signature *C.uchar
+
+	C.ecall_pay_w(C.uint(uint32(channelId)), C.uint(uint32(amount)), &originalMessage, &signature)
 	defer conn.Close()
 	client := clientPb.NewClientClient(conn)
-
 	_, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
@@ -88,7 +92,7 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 	log.Println(r.Result)
 	// 결과가 성공하면 update
 	if r.Result {
-		C.ecall_pay_w(C.uint(uint32(channelId)), C.uint(uint32(amount)))
+		C.ecall_pay_w_accepted(C.uint(uint32(channelId)), C.uint(uint32(amount)))
 		ctx.JSON(http.StatusOK, gin.H{"success": r.Result})
 	}else{
 		ctx.JSON(http.StatusBadRequest, gin.H{"success": r.Result})

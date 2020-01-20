@@ -74,6 +74,9 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 
 func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.ChannelPayment) (*clientPb.DirectPaymentResult, error) {
 	log.Println("----Direct Channel Payment Request Receive----")
+	convertedOriginalMessage := C.CString(in.)
+
+	C.ecall_paid_w(original_msg, signature, &reply_msg, &reply_sig)
 	C.ecall_pay_w(C.uint(uint32(in.ChannelId)), C.uint(uint32(in.Amount)))
 	log.Println("----Direct Channel Payment Request End----")
 
