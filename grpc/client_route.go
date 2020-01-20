@@ -15,6 +15,7 @@ import (
 	"log"
 	"fmt"
 	"time"
+	"unsafe"
 )
 
 type ClientGrpc struct {
@@ -74,16 +75,23 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 
 func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.ChannelPayment) (*clientPb.DirectPaymentResult, error) {
 	log.Println("----Direct Channel Payment Request Receive----")
-	convertedOriginalMessage := C.CString(in.)
+	originalMessage := C.CString(in.OriginalMessage)
+	signature := C.CString(in.OriginalMessage)
+	defer C.free(unsafe.Pointer(originalMessage))
+	defer C.free(unsafe.Pointer(signature))
 
-	C.ecall_paid_w(original_msg, signature, &reply_msg, &reply_sig)
-	C.ecall_pay_w(C.uint(uint32(in.ChannelId)), C.uint(uint32(in.Amount)))
+	var replyMessage *C.uchar
+	var replySignature *C.uchar
+
+	C.ecall_paid_w(originalMessage, signature, &replyMessage, &replySignature)
 	log.Println("----Direct Channel Payment Request End----")
 
 	fmt.Println(C.ecall_get_balance_w(C.uint(1)))
 	fmt.Println(C.ecall_get_balance_w(C.uint(2)))
 	fmt.Println(time.Since(controller.ExecutionTime))
 
+	convertedReplyMessage := C.GoString(replyMessage)
+	convertedReplySignature := C.GoString(replySignature)
 
-	return &clientPb.DirectPaymentResult{Result: true}, nil
+	return &clientPb.DirectPaymentResult{Result: true, ReplyMessage: convertedReplyMessage, ReplySignature: convertedReplySignature}, nil
 }

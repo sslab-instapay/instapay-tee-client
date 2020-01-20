@@ -39,4 +39,6 @@ message Result {
 
 message DirectPaymentResult{
     bool result = 1;
+    string replyMessage = 2;
+    string replySignature = 3;
 }

@@ -15,7 +15,9 @@ import (
 	"context"
 	"github.com/sslab-instapay/instapay-tee-client/model"
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
-	)
+	"github.com/sslab-instapay/instapay-tee-client/util"
+	"unsafe"
+)
 
 var ExecutionTime time.Time
 
@@ -65,13 +67,19 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 		log.Println(err)
 	}
 
-	// TODO 아이피 정보를 어떻게 저장할 것인지 구현 후.
+	// TODO 채널 ID로부터 상대 주소 받아와야함
 	channel, err := repository.GetChannelById(int64(channelId))
 	if err != nil{
 		log.Println(err)
 	}
 
-	conn, err := grpc.Dial(channel.OtherIp + ":" + strconv.Itoa(channel.OtherPort), grpc.WithInsecure())
+	peerInformation, _,err := util.GetPeerInformationByAddress("0xww")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"success": false})
+		return
+	}
+
+	conn, err := grpc.Dial(peerInformation.IpAddress + ":" + strconv.Itoa(peerInformation.GrpcPort), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -90,9 +98,15 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Println(r.Result)
-	// 결과가 성공하면 update
+
 	if r.Result {
-		C.ecall_pay_w_accepted(C.uint(uint32(channelId)), C.uint(uint32(amount)))
+		replyMessage := C.CString(r.ReplyMessage)
+		replySignature := C.CString(r.ReplySignature)
+		defer C.free(unsafe.Pointer(replyMessage))
+		defer C.free(unsafe.Pointer(replySignature))
+		log.Println("----- payment accept w start -----")
+		C.ecall_pay_accepted_w(replyMessage, replySignature)
+		log.Println("----- payment accept w end -----")
 		ctx.JSON(http.StatusOK, gin.H{"success": r.Result})
 	}else{
 		ctx.JSON(http.StatusBadRequest, gin.H{"success": r.Result})
