@@ -100,12 +100,19 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 	log.Println(r.Result)
 
 	if r.Result {
-		replyMessage := C.CString(r.ReplyMessage)
-		replySignature := C.CString(r.ReplySignature)
-		defer C.free(unsafe.Pointer(replyMessage))
-		defer C.free(unsafe.Pointer(replySignature))
+		var originalMessage [44]C.uchar
+		for i:= 0; i < 44; i++ {
+			originalMessage[i] = C.uchar(r.ReplyMessage[i])
+		}
+		originalMessagePointer := (*C.uchar)(unsafe.Pointer(&originalMessage[0]))
+
+		var signature [65]C.uchar
+		for i:= 0; i < 65; i++ {
+			signature[i] = C.uchar(r.ReplySignature[i])
+		}
+		signaturePointer := (*C.uchar)(unsafe.Pointer(&signature))
 		log.Println("----- payment accept w start -----")
-		C.ecall_pay_accepted_w(replyMessage, replySignature)
+		C.ecall_pay_accepted_w(originalMessagePointer, signaturePointer)
 		log.Println("----- payment accept w end -----")
 		ctx.JSON(http.StatusOK, gin.H{"success": r.Result})
 	}else{

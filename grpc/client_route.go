@@ -122,23 +122,46 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 
 func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.ChannelPayment) (*clientPb.DirectPaymentResult, error) {
 	log.Println("----Direct Channel Payment Request Receive----")
-	originalMessage := C.CString(in.OriginalMessage)
-	signature := C.CString(in.OriginalMessage)
-	defer C.free(unsafe.Pointer(originalMessage))
-	defer C.free(unsafe.Pointer(signature))
+	var originalMessage [44]C.uchar
+	for i:= 0; i < 44; i++ {
+		originalMessage[i] = C.uchar(in.OriginalMessage[i])
+	}
+	originalMessagePointer := (*C.uchar)(unsafe.Pointer(&originalMessage[0]))
+
+	var signature [65]C.uchar
+	for i:= 0; i < 65; i++ {
+		signature[i] = C.uchar(in.Signature[i])
+	}
+	signaturePointer := (*C.uchar)(unsafe.Pointer(&signature))
 
 	var replyMessage *C.uchar
 	var replySignature *C.uchar
 
-	C.ecall_paid_w(originalMessage, signature, &replyMessage, &replySignature)
+	C.ecall_paid_w(originalMessagePointer, signaturePointer, &replyMessage, &replySignature)
 	log.Println("----Direct Channel Payment Request End----")
 
-	fmt.Println(C.ecall_get_balance_w(C.uint(1)))
-	fmt.Println(C.ecall_get_balance_w(C.uint(2)))
-	fmt.Println(time.Since(controller.ExecutionTime))
+	replyMsgHdr := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(replyMessage)),
+		Len: int(44),
+		Cap: int(44),
+	}
+	replyMsgS := *(*[]C.uchar)(unsafe.Pointer(&replyMsgHdr))
 
-	convertedReplyMessage := C.GoString(replyMessage)
-	convertedReplySignature := C.GoString(replySignature)
+	replySigHdr := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(replySignature)),
+		Len: int(65),
+		Cap: int(65),
+	}
+	replySigS := *(*[]C.uchar)(unsafe.Pointer(&replySigHdr))
+
+	var convertedReplyMessage []byte
+	var convertedReplySignature []byte
+	for i := C.uint(0); i < 44; i++{
+		convertedReplyMessage = append(convertedReplyMessage, byte(replyMsgS[i]))
+	}
+	for i := C.uint(0); i < 65; i++{
+		convertedReplySignature = append(convertedReplySignature, byte(replySigS[i]))
+	}
 
 	return &clientPb.DirectPaymentResult{Result: true, ReplyMessage: convertedReplyMessage, ReplySignature: convertedReplySignature}, nil
 }
