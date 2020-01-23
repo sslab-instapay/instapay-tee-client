@@ -17,6 +17,7 @@ import (
 	"time"
 	"unsafe"
 	"reflect"
+	"github.com/sslab-instapay/instapay-tee-client/util"
 )
 
 type ClientGrpc struct {
@@ -36,28 +37,13 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 	}
 
 	//void ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
-	convertedOriginalMsg := &([]C.uchar(in.OriginalMessage)[0])
-	convertedSignatureMsg := &([]C.uchar(in.Signature)[0])
+	convertedOriginalMsg, convertedSignatureMsg := util.ConvertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar
 	var signature *C.uchar
 	C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, originalMsg, signature)
 
-	hdr1 := reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(originalMsg)),
-		Len:  int(44),
-		Cap:  int(44),
-	}
-	s1 := *(*[]C.uchar)(unsafe.Pointer(&hdr1))
-
-	hdr2 := reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(signature)),
-		Len:  int(65),
-		Cap:  int(65),
-	}
-	s2 := *(*[]C.uchar)(unsafe.Pointer(&hdr2))
-	originalMessageStr := fmt.Sprintf("02x", s1)
-	signatureStr := fmt.Sprintf("02x", s2)
+	originalMessageStr, signatureStr := util.ConvertPointerToByte(originalMsg, signature)
 
 	return &clientPb.AgreementResult{PaymentNumber: in.PaymentNumber, Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 }
@@ -78,28 +64,12 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 	// TODO 서명, 메시지 넣은 후 전송
 	//void ecall_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
 
-	convertedOriginalMsg := &([]C.uchar(in.OriginalMessage)[0])
-	convertedSignatureMsg := &([]C.uchar(in.Signature)[0])
-
+	convertedOriginalMsg, convertedSignatureMsg := util.ConvertByteToPointer(in.OriginalMessage, in.Signature)
 	var originalMsg *C.uchar
 	var signature *C.uchar
 	C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, originalMsg, signature)
 
-	hdr1 := reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(originalMsg)),
-		Len:  int(44),
-		Cap:  int(44),
-	}
-	s1 := *(*[]C.uchar)(unsafe.Pointer(&hdr1))
-
-	hdr2 := reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(signature)),
-		Len:  int(65),
-		Cap:  int(65),
-	}
-	s2 := *(*[]C.uchar)(unsafe.Pointer(&hdr2))
-	originalMessageStr := fmt.Sprintf("02x", s1)
-	signatureStr := fmt.Sprintf("02x", s2)
+	originalMessageStr, signatureStr := util.ConvertPointerToByte(originalMsg, signature)
 	C.ecall_go_post_update_w()
 
 	return &clientPb.UpdateResult{PaymentNumber: in.PaymentNumber, Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
@@ -107,9 +77,8 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 
 func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmRequestsMessage) (*clientPb.Result, error) {
 	log.Println("----ConfirmPayment Request Receive----")
-	//void ecall_go_idle_w(unsigned char *msg, unsigned char *signature);
-	convertedOriginalMsg := &([]C.uchar(in.OriginalMessage)[0])
-	convertedSignatureMsg := &([]C.uchar(in.Signature)[0])
+
+	convertedOriginalMsg, convertedSignatureMsg := util.ConvertByteToPointer(in.OriginalMessage, in.Signature)
 	C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
 	log.Println("----ConfirmPayment Request End----")
 
