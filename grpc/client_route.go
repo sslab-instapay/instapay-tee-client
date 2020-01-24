@@ -15,9 +15,7 @@ import (
 	"log"
 	"fmt"
 	"time"
-	"unsafe"
-	"reflect"
-	"github.com/sslab-instapay/instapay-tee-client/util"
+			"github.com/sslab-instapay/instapay-tee-client/util"
 )
 
 type ClientGrpc struct {
@@ -61,9 +59,7 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 		amount = append(amount, C.int(int32(channelPayment.Amount)))
 	}
 
-	// TODO 서명, 메시지 넣은 후 전송
 	//void ecall_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
-
 	convertedOriginalMsg, convertedSignatureMsg := util.ConvertByteToPointer(in.OriginalMessage, in.Signature)
 	var originalMsg *C.uchar
 	var signature *C.uchar
@@ -91,17 +87,8 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 
 func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.ChannelPayment) (*clientPb.DirectPaymentResult, error) {
 	log.Println("----Direct Channel Payment Request Receive----")
-	var originalMessage [44]C.uchar
-	for i:= 0; i < 44; i++ {
-		originalMessage[i] = C.uchar(in.OriginalMessage[i])
-	}
-	originalMessagePointer := (*C.uchar)(unsafe.Pointer(&originalMessage[0]))
 
-	var signature [65]C.uchar
-	for i:= 0; i < 65; i++ {
-		signature[i] = C.uchar(in.Signature[i])
-	}
-	signaturePointer := (*C.uchar)(unsafe.Pointer(&signature))
+	originalMessagePointer, signaturePointer := util.ConvertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var replyMessage *C.uchar
 	var replySignature *C.uchar
@@ -109,28 +96,7 @@ func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.Chan
 	C.ecall_paid_w(originalMessagePointer, signaturePointer, &replyMessage, &replySignature)
 	log.Println("----Direct Channel Payment Request End----")
 
-	replyMsgHdr := reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(replyMessage)),
-		Len: int(44),
-		Cap: int(44),
-	}
-	replyMsgS := *(*[]C.uchar)(unsafe.Pointer(&replyMsgHdr))
-
-	replySigHdr := reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(replySignature)),
-		Len: int(65),
-		Cap: int(65),
-	}
-	replySigS := *(*[]C.uchar)(unsafe.Pointer(&replySigHdr))
-
-	var convertedReplyMessage []byte
-	var convertedReplySignature []byte
-	for i := C.uint(0); i < 44; i++{
-		convertedReplyMessage = append(convertedReplyMessage, byte(replyMsgS[i]))
-	}
-	for i := C.uint(0); i < 65; i++{
-		convertedReplySignature = append(convertedReplySignature, byte(replySigS[i]))
-	}
+	convertedReplyMessage, convertedReplySignature := util.ConvertPointerToByte(replyMessage, replySignature)
 
 	return &clientPb.DirectPaymentResult{Result: true, ReplyMessage: convertedReplyMessage, ReplySignature: convertedReplySignature}, nil
 }
