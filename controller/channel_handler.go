@@ -15,6 +15,8 @@ import (
 	"context"
 	"github.com/sslab-instapay/instapay-tee-client/model"
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
+	"github.com/sslab-instapay/instapay-tee-client/util"
+	"unsafe"
 )
 
 var ExecutionTime time.Time
@@ -65,19 +67,29 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 		log.Println(err)
 	}
 
-	// TODO 아이피 정보를 어떻게 저장할 것인지 구현 후.
+	// TODO 채널 ID로부터 상대 주소 받아와야함
 	channel, err := repository.GetChannelById(int64(channelId))
 	if err != nil{
 		log.Println(err)
 	}
 
-	conn, err := grpc.Dial(channel.OtherIp + ":" + strconv.Itoa(channel.OtherPort), grpc.WithInsecure())
+	peerInformation, _,err := util.GetPeerInformationByAddress("0xww")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"success": false})
+		return
+	}
+
+	conn, err := grpc.Dial(peerInformation.IpAddress + ":" + strconv.Itoa(peerInformation.GrpcPort), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
+	// pay_w 실행 후 상대에게 요청
+	var originalMessage *C.uchar
+	var signature *C.uchar
+
+	C.ecall_pay_w(C.uint(uint32(channelId)), C.uint(uint32(amount)), &originalMessage, &signature)
 	defer conn.Close()
 	client := clientPb.NewClientClient(conn)
-
 	_, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
@@ -86,9 +98,22 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Println(r.Result)
-	// 결과가 성공하면 update
+
 	if r.Result {
-		C.ecall_pay_w(C.uint(uint32(channelId)), C.uint(uint32(amount)))
+		var originalMessage [44]C.uchar
+		for i:= 0; i < 44; i++ {
+			originalMessage[i] = C.uchar(r.ReplyMessage[i])
+		}
+		originalMessagePointer := (*C.uchar)(unsafe.Pointer(&originalMessage[0]))
+
+		var signature [65]C.uchar
+		for i:= 0; i < 65; i++ {
+			signature[i] = C.uchar(r.ReplySignature[i])
+		}
+		signaturePointer := (*C.uchar)(unsafe.Pointer(&signature))
+		log.Println("----- payment accept w start -----")
+		C.ecall_pay_accepted_w(originalMessagePointer, signaturePointer)
+		log.Println("----- payment accept w end -----")
 		ctx.JSON(http.StatusOK, gin.H{"success": r.Result})
 	}else{
 		ctx.JSON(http.StatusBadRequest, gin.H{"success": r.Result})
