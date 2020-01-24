@@ -2,15 +2,48 @@ package repository
 
 import "C"
 import (
-	"context"
-	"go.mongodb.org/mongo-driver/bson"
-	"log"
-	"github.com/sslab-instapay/instapay-tee-client/model"
-	"github.com/sslab-instapay/instapay-tee-client/db"
-	"fmt"
+				"github.com/sslab-instapay/instapay-tee-client/model"
+		"fmt"
 	"unsafe"
 	"reflect"
 )
+
+func GetChannelByID(channelId int) (model.Channel, error){
+	var ci unsafe.Pointer
+	ci = C.ecall_get_channel_info_w(C.uint(channelId))
+	cvtd := (*C.channel)(unsafe.Pointer(ci))
+
+	channel := model.Channel{}
+
+	channel.MyDeposit = cvtd.m_my_deposit
+	channel.OtherDeposit = cvtd.m_other_deposit
+	channel.MyBalance = cvtd.m_my_balance
+	channel.LockedBalance = cvtd.m_locked_balance
+
+	var sig *C.uchar = &(cvtd.m_my_addr[0])
+	hdr := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(sig)),
+		Len:  int(20),
+		Cap:  int(20),
+	}
+	s := *(*[]C.uchar)(unsafe.Pointer(&hdr))
+	var myAddress string
+	myAddress = fmt.Sprintf("%02x", s)
+	channel.MyAddress = "0x" + myAddress
+
+	var sig1 *C.uchar = &(cvtd.m_other_addr[0])
+	hdr1 := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(sig1)),
+		Len:  int(20),
+		Cap:  int(20),
+	}
+	s1 := *(*[]C.uchar)(unsafe.Pointer(&hdr1))
+	var otherAddress string
+	otherAddress = fmt.Sprint("%02x", s1)
+	channel.OtherAddress = "0x" + otherAddress
+
+	return channel, nil
+}
 
 func GetAllChannelsLockedBalance() (int64, error) {
 
@@ -154,23 +187,3 @@ func GetOpenedChannelList() ([]model.Channel, error) {
 	return channelList, nil
 }
 
-func GetChannelById(channelId int64) (model.Channel, error) {
-
-	database, err := db.GetDatabase()
-	if err != nil {
-		return model.Channel{}, err
-	}
-
-	filter := bson.M{
-		"channelId": channelId,
-	}
-
-	collection := database.Collection("channels")
-
-	channel := model.Channel{}
-	singleRecord := collection.FindOne(context.TODO(), filter)
-	if err := singleRecord.Decode(&channel); err != nil {
-		log.Println(err)
-	}
-	return channel, nil
-}
