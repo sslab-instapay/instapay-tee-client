@@ -5,14 +5,14 @@ import (
 	"log"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	instapay "github.com/sslab-instapay/instapay-go-client/contract"
+	instapay "github.com/sslab-instapay/instapay-tee-server/contract"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"strings"
-	"github.com/sslab-instapay/instapay-go-client/model"
-	"github.com/sslab-instapay/instapay-go-client/repository"
-	"github.com/sslab-instapay/instapay-go-client/config"
+	"github.com/sslab-instapay/instapay-tee-client/model"
+	"github.com/sslab-instapay/instapay-tee-client/repository"
+	"github.com/sslab-instapay/instapay-tee-client/config"
 	)
 
 var EthereumConfig = map[string]string{
@@ -98,7 +98,7 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) {
 		MyBalance: 0, MyDeposit: 0, OtherAddress: event.Owner.String()}
 	// TODO server에 보냄
 
-	repository.InsertChannel(channel)
+	//repository.InsertChannel(channel)
 }
 
 func HandleCloseChannelEvent(event model.CloseChannelEvent) {
@@ -110,5 +110,5 @@ func HandleCloseChannelEvent(event model.CloseChannelEvent) {
 	}
 
 	channel.Status = model.CLOSED
-	repository.UpdateChannel(channel)
+	//repository.UpdateChannel(channel)
 }

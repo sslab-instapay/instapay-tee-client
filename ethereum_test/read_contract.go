@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	instapayContract "github.com/sslab-instapay/instapay-tee-client/contracts"
+	"math/big"
+	instapayContract "github.com/sslab-instapay/instapay-tee-server/contracts"
 	"log"
 )
 
@@ -13,7 +14,7 @@ func main(){
 	if err != nil {
 		log.Fatal(err)
 	}
-	address := common.HexToAddress("0xe8ff3ac1ca790a4656a34a0a82442d15ea24b3f7aa75bfa6f15d003804bb306a")
+	address := common.HexToAddress("0x092d70BB5c1954F5Fa3EBbb282d0416a5e46c818")
 	instance, err := instapayContract.NewInstapay(address , client)
 	if err != nil {
 		log.Fatal(err)
@@ -26,4 +27,20 @@ func main(){
 	}
 
 	fmt.Println(readme)
+
+	deposit, err := instance.Getchanneldeposit(nil, big.NewInt(5))
+	if err != nil {
+		fmt.Printf("ERROR 2: ")
+		log.Fatal(err)
+	}
+
+	fmt.Println(deposit)
+
+	status, err := instance.Getchannelstatus(nil, big.NewInt(5))
+	if err != nil {
+		fmt.Printf("ERROR 2: ")
+		log.Fatal(err)
+	}
+
+	fmt.Println(status)
 }
