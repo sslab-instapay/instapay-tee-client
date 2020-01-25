@@ -11,6 +11,7 @@ func RegisterRestRouter(router *gin.Engine) {
 	accountRouter := router.Group("account")
 	{
 		accountRouter.GET("list", controller.AccountInformationHandler)
+		accountRouter.POST("payment", controller.OnchainPaymentHandler)
 	}
 	walletRouter := router.Group("wallets")
 	{
@@ -19,8 +20,13 @@ func RegisterRestRouter(router *gin.Engine) {
 	channelRouter := router.Group("channel")
 	{
 		channelRouter.GET("list", controller.GetChannelListHandler)
-		channelRouter.POST("open", controller.OpenChannelHandler)
-		channelRouter.POST("close", controller.CloseChannelHandler)
-		channelRouter.POST("eject", controller.EjectChannelHandler)
+	}
+	channelRequestRouter := router.Group("channel/requests")
+	{
+		channelRequestRouter.POST("open", controller.OpenChannelHandler)
+		channelRequestRouter.POST("direct", controller.DirectPayChannelHandler)
+		channelRequestRouter.POST("close", controller.CloseChannelHandler)
+		channelRequestRouter.POST("server", controller.PaymentToServerChannelHandler)
+		channelRequestRouter.POST("eject", controller.EjectChannelHandler)
 	}
 }

@@ -27,6 +27,8 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 type AgreeRequestsMessage struct {
 	PaymentNumber        int64            `protobuf:"varint,1,opt,name=paymentNumber,proto3" json:"paymentNumber,omitempty"`
 	ChannelPayments      *ChannelPayments `protobuf:"bytes,2,opt,name=channelPayments,proto3" json:"channelPayments,omitempty"`
+	OriginalMessage      []byte           `protobuf:"bytes,3,opt,name=originalMessage,proto3" json:"originalMessage,omitempty"`
+	Signature            []byte           `protobuf:"bytes,4,opt,name=signature,proto3" json:"signature,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
 	XXX_unrecognized     []byte           `json:"-"`
 	XXX_sizecache        int32            `json:"-"`
@@ -71,9 +73,25 @@ func (m *AgreeRequestsMessage) GetChannelPayments() *ChannelPayments {
 	return nil
 }
 
+func (m *AgreeRequestsMessage) GetOriginalMessage() []byte {
+	if m != nil {
+		return m.OriginalMessage
+	}
+	return nil
+}
+
+func (m *AgreeRequestsMessage) GetSignature() []byte {
+	if m != nil {
+		return m.Signature
+	}
+	return nil
+}
+
 type UpdateRequestsMessage struct {
 	PaymentNumber        int64            `protobuf:"varint,1,opt,name=paymentNumber,proto3" json:"paymentNumber,omitempty"`
 	ChannelPayments      *ChannelPayments `protobuf:"bytes,2,opt,name=channelPayments,proto3" json:"channelPayments,omitempty"`
+	OriginalMessage      []byte           `protobuf:"bytes,3,opt,name=originalMessage,proto3" json:"originalMessage,omitempty"`
+	Signature            []byte           `protobuf:"bytes,4,opt,name=signature,proto3" json:"signature,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
 	XXX_unrecognized     []byte           `json:"-"`
 	XXX_sizecache        int32            `json:"-"`
@@ -118,8 +136,24 @@ func (m *UpdateRequestsMessage) GetChannelPayments() *ChannelPayments {
 	return nil
 }
 
+func (m *UpdateRequestsMessage) GetOriginalMessage() []byte {
+	if m != nil {
+		return m.OriginalMessage
+	}
+	return nil
+}
+
+func (m *UpdateRequestsMessage) GetSignature() []byte {
+	if m != nil {
+		return m.Signature
+	}
+	return nil
+}
+
 type ConfirmRequestsMessage struct {
 	PaymentNumber        int64    `protobuf:"varint,1,opt,name=paymentNumber,proto3" json:"paymentNumber,omitempty"`
+	OriginalMessage      []byte   `protobuf:"bytes,2,opt,name=originalMessage,proto3" json:"originalMessage,omitempty"`
+	Signature            []byte   `protobuf:"bytes,3,opt,name=signature,proto3" json:"signature,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -157,9 +191,25 @@ func (m *ConfirmRequestsMessage) GetPaymentNumber() int64 {
 	return 0
 }
 
+func (m *ConfirmRequestsMessage) GetOriginalMessage() []byte {
+	if m != nil {
+		return m.OriginalMessage
+	}
+	return nil
+}
+
+func (m *ConfirmRequestsMessage) GetSignature() []byte {
+	if m != nil {
+		return m.Signature
+	}
+	return nil
+}
+
 type ChannelPayment struct {
 	ChannelId            int64    `protobuf:"varint,1,opt,name=channelId,proto3" json:"channelId,omitempty"`
 	Amount               int64    `protobuf:"varint,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	OriginalMessage      []byte   `protobuf:"bytes,3,opt,name=originalMessage,proto3" json:"originalMessage,omitempty"`
+	Signature            []byte   `protobuf:"bytes,4,opt,name=signature,proto3" json:"signature,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -204,6 +254,20 @@ func (m *ChannelPayment) GetAmount() int64 {
 	return 0
 }
 
+func (m *ChannelPayment) GetOriginalMessage() []byte {
+	if m != nil {
+		return m.OriginalMessage
+	}
+	return nil
+}
+
+func (m *ChannelPayment) GetSignature() []byte {
+	if m != nil {
+		return m.Signature
+	}
+	return nil
+}
+
 type ChannelPayments struct {
 	ChannelPayments      []*ChannelPayment `protobuf:"bytes,1,rep,name=channelPayments,proto3" json:"channelPayments,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
@@ -243,6 +307,132 @@ func (m *ChannelPayments) GetChannelPayments() []*ChannelPayment {
 	return nil
 }
 
+type AgreementResult struct {
+	PaymentNumber        int64    `protobuf:"varint,1,opt,name=paymentNumber,proto3" json:"paymentNumber,omitempty"`
+	Result               bool     `protobuf:"varint,2,opt,name=result,proto3" json:"result,omitempty"`
+	OriginalMessage      []byte   `protobuf:"bytes,3,opt,name=originalMessage,proto3" json:"originalMessage,omitempty"`
+	Signature            []byte   `protobuf:"bytes,4,opt,name=signature,proto3" json:"signature,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *AgreementResult) Reset()         { *m = AgreementResult{} }
+func (m *AgreementResult) String() string { return proto.CompactTextString(m) }
+func (*AgreementResult) ProtoMessage()    {}
+func (*AgreementResult) Descriptor() ([]byte, []int) {
+	return fileDescriptor_014de31d7ac8c57c, []int{5}
+}
+
+func (m *AgreementResult) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AgreementResult.Unmarshal(m, b)
+}
+func (m *AgreementResult) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AgreementResult.Marshal(b, m, deterministic)
+}
+func (m *AgreementResult) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AgreementResult.Merge(m, src)
+}
+func (m *AgreementResult) XXX_Size() int {
+	return xxx_messageInfo_AgreementResult.Size(m)
+}
+func (m *AgreementResult) XXX_DiscardUnknown() {
+	xxx_messageInfo_AgreementResult.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AgreementResult proto.InternalMessageInfo
+
+func (m *AgreementResult) GetPaymentNumber() int64 {
+	if m != nil {
+		return m.PaymentNumber
+	}
+	return 0
+}
+
+func (m *AgreementResult) GetResult() bool {
+	if m != nil {
+		return m.Result
+	}
+	return false
+}
+
+func (m *AgreementResult) GetOriginalMessage() []byte {
+	if m != nil {
+		return m.OriginalMessage
+	}
+	return nil
+}
+
+func (m *AgreementResult) GetSignature() []byte {
+	if m != nil {
+		return m.Signature
+	}
+	return nil
+}
+
+type UpdateResult struct {
+	PaymentNumber        int64    `protobuf:"varint,1,opt,name=paymentNumber,proto3" json:"paymentNumber,omitempty"`
+	Result               bool     `protobuf:"varint,2,opt,name=result,proto3" json:"result,omitempty"`
+	OriginalMessage      []byte   `protobuf:"bytes,3,opt,name=originalMessage,proto3" json:"originalMessage,omitempty"`
+	Signature            []byte   `protobuf:"bytes,4,opt,name=signature,proto3" json:"signature,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UpdateResult) Reset()         { *m = UpdateResult{} }
+func (m *UpdateResult) String() string { return proto.CompactTextString(m) }
+func (*UpdateResult) ProtoMessage()    {}
+func (*UpdateResult) Descriptor() ([]byte, []int) {
+	return fileDescriptor_014de31d7ac8c57c, []int{6}
+}
+
+func (m *UpdateResult) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateResult.Unmarshal(m, b)
+}
+func (m *UpdateResult) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateResult.Marshal(b, m, deterministic)
+}
+func (m *UpdateResult) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateResult.Merge(m, src)
+}
+func (m *UpdateResult) XXX_Size() int {
+	return xxx_messageInfo_UpdateResult.Size(m)
+}
+func (m *UpdateResult) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateResult.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateResult proto.InternalMessageInfo
+
+func (m *UpdateResult) GetPaymentNumber() int64 {
+	if m != nil {
+		return m.PaymentNumber
+	}
+	return 0
+}
+
+func (m *UpdateResult) GetResult() bool {
+	if m != nil {
+		return m.Result
+	}
+	return false
+}
+
+func (m *UpdateResult) GetOriginalMessage() []byte {
+	if m != nil {
+		return m.OriginalMessage
+	}
+	return nil
+}
+
+func (m *UpdateResult) GetSignature() []byte {
+	if m != nil {
+		return m.Signature
+	}
+	return nil
+}
+
 type Result struct {
 	PaymentNumber        int64    `protobuf:"varint,1,opt,name=paymentNumber,proto3" json:"paymentNumber,omitempty"`
 	Result               bool     `protobuf:"varint,2,opt,name=result,proto3" json:"result,omitempty"`
@@ -255,7 +445,7 @@ func (m *Result) Reset()         { *m = Result{} }
 func (m *Result) String() string { return proto.CompactTextString(m) }
 func (*Result) ProtoMessage()    {}
 func (*Result) Descriptor() ([]byte, []int) {
-	return fileDescriptor_014de31d7ac8c57c, []int{5}
+	return fileDescriptor_014de31d7ac8c57c, []int{7}
 }
 
 func (m *Result) XXX_Unmarshal(b []byte) error {
@@ -292,6 +482,8 @@ func (m *Result) GetResult() bool {
 
 type DirectPaymentResult struct {
 	Result               bool     `protobuf:"varint,1,opt,name=result,proto3" json:"result,omitempty"`
+	ReplyMessage         []byte   `protobuf:"bytes,2,opt,name=replyMessage,proto3" json:"replyMessage,omitempty"`
+	ReplySignature       []byte   `protobuf:"bytes,3,opt,name=replySignature,proto3" json:"replySignature,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -301,7 +493,7 @@ func (m *DirectPaymentResult) Reset()         { *m = DirectPaymentResult{} }
 func (m *DirectPaymentResult) String() string { return proto.CompactTextString(m) }
 func (*DirectPaymentResult) ProtoMessage()    {}
 func (*DirectPaymentResult) Descriptor() ([]byte, []int) {
-	return fileDescriptor_014de31d7ac8c57c, []int{6}
+	return fileDescriptor_014de31d7ac8c57c, []int{8}
 }
 
 func (m *DirectPaymentResult) XXX_Unmarshal(b []byte) error {
@@ -329,12 +521,28 @@ func (m *DirectPaymentResult) GetResult() bool {
 	return false
 }
 
+func (m *DirectPaymentResult) GetReplyMessage() []byte {
+	if m != nil {
+		return m.ReplyMessage
+	}
+	return nil
+}
+
+func (m *DirectPaymentResult) GetReplySignature() []byte {
+	if m != nil {
+		return m.ReplySignature
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*AgreeRequestsMessage)(nil), "AgreeRequestsMessage")
 	proto.RegisterType((*UpdateRequestsMessage)(nil), "UpdateRequestsMessage")
 	proto.RegisterType((*ConfirmRequestsMessage)(nil), "ConfirmRequestsMessage")
 	proto.RegisterType((*ChannelPayment)(nil), "ChannelPayment")
 	proto.RegisterType((*ChannelPayments)(nil), "ChannelPayments")
+	proto.RegisterType((*AgreementResult)(nil), "AgreementResult")
+	proto.RegisterType((*UpdateResult)(nil), "UpdateResult")
 	proto.RegisterType((*Result)(nil), "Result")
 	proto.RegisterType((*DirectPaymentResult)(nil), "DirectPaymentResult")
 }
@@ -342,28 +550,34 @@ func init() {
 func init() { proto.RegisterFile("client.proto", fileDescriptor_014de31d7ac8c57c) }
 
 var fileDescriptor_014de31d7ac8c57c = []byte{
-	// 327 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x53, 0x4d, 0x4b, 0xf3, 0x40,
-	0x10, 0xee, 0xbe, 0x85, 0xbc, 0x3a, 0xb5, 0x1f, 0xac, 0x6d, 0x2c, 0xc5, 0x43, 0x59, 0x3c, 0xf4,
-	0xe2, 0x1e, 0x62, 0x2f, 0x7a, 0x50, 0xa4, 0x52, 0x10, 0x54, 0x64, 0xc1, 0x1f, 0xb0, 0x4d, 0xc7,
-	0x5a, 0x68, 0x36, 0x75, 0x77, 0x03, 0xf6, 0x27, 0xfb, 0x2f, 0xc4, 0x4d, 0x4a, 0x93, 0x34, 0x07,
-	0xf1, 0xe2, 0x71, 0x87, 0x99, 0x79, 0xe6, 0xf9, 0x58, 0x38, 0x0a, 0x57, 0x4b, 0x54, 0x96, 0xaf,
-	0x75, 0x6c, 0x63, 0xf6, 0x01, 0xdd, 0xdb, 0x85, 0x46, 0x14, 0xf8, 0x9e, 0xa0, 0xb1, 0xe6, 0x11,
-	0x8d, 0x91, 0x0b, 0xa4, 0x67, 0xd0, 0x5c, 0xcb, 0x4d, 0x84, 0xca, 0x3e, 0x25, 0xd1, 0x0c, 0x75,
-	0x9f, 0x0c, 0xc9, 0xa8, 0x2e, 0x8a, 0x45, 0x7a, 0x05, 0xed, 0xf0, 0x4d, 0x2a, 0x85, 0xab, 0xe7,
-	0xb4, 0x6e, 0xfa, 0xff, 0x86, 0x64, 0xd4, 0x08, 0x3a, 0x7c, 0x52, 0xac, 0x8b, 0x72, 0x23, 0xdb,
-	0x40, 0xef, 0x65, 0x3d, 0x97, 0xf6, 0x0f, 0xa0, 0xaf, 0xc1, 0x9f, 0xc4, 0xea, 0x75, 0xa9, 0xa3,
-	0x5f, 0x61, 0xb3, 0x29, 0xb4, 0x8a, 0x18, 0xf4, 0x14, 0x0e, 0x33, 0x90, 0xfb, 0x79, 0x36, 0xb3,
-	0x2b, 0x50, 0x1f, 0x3c, 0x19, 0xc5, 0x89, 0xb2, 0xee, 0xc4, 0xba, 0xc8, 0x5e, 0xec, 0x01, 0xda,
-	0xa5, 0x5b, 0xe9, 0xe5, 0x3e, 0x2d, 0x32, 0xac, 0x8f, 0x1a, 0x41, 0xbb, 0x44, 0x6b, 0x9f, 0xd5,
-	0x14, 0x3c, 0x81, 0x26, 0x59, 0xd9, 0x1f, 0x2a, 0xe8, 0x83, 0xa7, 0x5d, 0xbf, 0xbb, 0xea, 0x40,
-	0x64, 0x2f, 0x76, 0x0e, 0xc7, 0x77, 0x4b, 0x8d, 0xa1, 0xdd, 0x22, 0xa5, 0x4b, 0x77, 0xed, 0x24,
-	0xdf, 0x1e, 0x7c, 0x12, 0xf0, 0x26, 0x2e, 0x52, 0x74, 0x0c, 0x1d, 0xf9, 0x1d, 0xa6, 0x74, 0xca,
-	0x29, 0x4b, 0x7b, 0xbc, 0x2a, 0x5f, 0x83, 0xff, 0x3c, 0x5d, 0xcb, 0x6a, 0x34, 0x80, 0x66, 0x92,
-	0x0f, 0x02, 0xf5, 0x79, 0x65, 0x30, 0xf2, 0x33, 0x63, 0x68, 0x85, 0xa9, 0x83, 0x5b, 0x07, 0x4e,
-	0x78, 0xb5, 0xa5, 0xf9, 0xa9, 0x1b, 0xe8, 0xce, 0x1d, 0xb3, 0x92, 0x7b, 0x65, 0x6d, 0x07, 0x5d,
-	0x5e, 0xa1, 0x00, 0xab, 0xcd, 0x3c, 0xf7, 0x69, 0x2e, 0xbe, 0x02, 0x00, 0x00, 0xff, 0xff, 0x99,
-	0x5a, 0xcc, 0x74, 0x44, 0x03, 0x00, 0x00,
+	// 429 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xd4, 0x54, 0xc1, 0xaa, 0xd3, 0x40,
+	0x14, 0xed, 0x34, 0x12, 0xf5, 0x36, 0x6d, 0xca, 0xd8, 0xc6, 0x10, 0x5c, 0x84, 0x41, 0x24, 0xab,
+	0x59, 0x54, 0x17, 0x2a, 0x88, 0x48, 0x45, 0x10, 0x54, 0x24, 0xe2, 0x07, 0x4c, 0xd3, 0x31, 0x06,
+	0x92, 0x49, 0x9c, 0x4c, 0x16, 0xfd, 0x01, 0x97, 0xae, 0x04, 0x7f, 0x47, 0xff, 0xca, 0xa5, 0x38,
+	0x4d, 0x4d, 0x33, 0xcd, 0xa2, 0x48, 0x17, 0xef, 0x2d, 0xe7, 0xe4, 0x4e, 0xe6, 0x9c, 0x7b, 0xce,
+	0xbd, 0xe0, 0x24, 0x79, 0xc6, 0x85, 0xa2, 0x95, 0x2c, 0x55, 0x49, 0x7e, 0x22, 0x58, 0xbc, 0x48,
+	0x25, 0xe7, 0x31, 0xff, 0xd2, 0xf0, 0x5a, 0xd5, 0x6f, 0x79, 0x5d, 0xb3, 0x94, 0xe3, 0xfb, 0x30,
+	0xad, 0xd8, 0xae, 0xe0, 0x42, 0xbd, 0x6b, 0x8a, 0x0d, 0x97, 0x3e, 0x0a, 0x51, 0x64, 0xc5, 0x7d,
+	0x10, 0x3f, 0x05, 0x37, 0xf9, 0xcc, 0x84, 0xe0, 0xf9, 0xfb, 0x3d, 0x5e, 0xfb, 0xe3, 0x10, 0x45,
+	0x93, 0xd5, 0x9c, 0xae, 0xfb, 0x78, 0x6c, 0x16, 0xe2, 0x08, 0xdc, 0x52, 0x66, 0x69, 0x26, 0x58,
+	0xde, 0x3e, 0xea, 0x5b, 0x21, 0x8a, 0x9c, 0xd8, 0x84, 0xf1, 0x3d, 0xb8, 0x5d, 0x67, 0xa9, 0x60,
+	0xaa, 0x91, 0xdc, 0xbf, 0xa1, 0x6b, 0x3a, 0x80, 0xfc, 0x42, 0xb0, 0xfc, 0x58, 0x6d, 0x99, 0xba,
+	0xc6, 0x1a, 0xbe, 0x22, 0xf0, 0xd6, 0xa5, 0xf8, 0x94, 0xc9, 0xe2, 0xff, 0x44, 0x0c, 0x10, 0x19,
+	0x9f, 0x41, 0xc4, 0x32, 0x89, 0x7c, 0x43, 0x30, 0xeb, 0xab, 0xfe, 0x7b, 0xa1, 0x95, 0xfd, 0x7a,
+	0xdb, 0x3e, 0xde, 0x01, 0xd8, 0x03, 0x9b, 0x15, 0x65, 0x23, 0x94, 0x7e, 0xcf, 0x8a, 0xdb, 0xd3,
+	0xc5, 0x3a, 0xf3, 0x06, 0x5c, 0xc3, 0x05, 0xfc, 0xe4, 0xd4, 0x30, 0x14, 0x5a, 0xd1, 0x64, 0xe5,
+	0x1a, 0x86, 0x9d, 0xf8, 0x45, 0x7e, 0x20, 0x70, 0x75, 0xdc, 0xf5, 0x67, 0x5e, 0x37, 0xb9, 0x3a,
+	0xb3, 0xc1, 0x1e, 0xd8, 0x52, 0xd7, 0x6b, 0x9d, 0xb7, 0xe2, 0xf6, 0x74, 0x31, 0x9d, 0xdf, 0x11,
+	0x38, 0x87, 0x14, 0x5f, 0x21, 0x5a, 0xaf, 0xc0, 0xbe, 0x04, 0x1f, 0xb2, 0x83, 0x3b, 0x2f, 0x33,
+	0xc9, 0x13, 0x75, 0xb0, 0x66, 0xff, 0xd3, 0xae, 0x1c, 0xf5, 0xe8, 0x13, 0x70, 0x24, 0xaf, 0xf2,
+	0x5d, 0x3f, 0xcb, 0x3d, 0x0c, 0x3f, 0x80, 0x99, 0x3e, 0x7f, 0x30, 0xd2, 0x6c, 0xa0, 0xab, 0xdf,
+	0x08, 0xec, 0xb5, 0xde, 0x79, 0xf8, 0x19, 0xcc, 0x59, 0xe7, 0xbe, 0x9e, 0x33, 0xbc, 0xa4, 0x43,
+	0xfb, 0x2f, 0x98, 0x53, 0x23, 0x27, 0x64, 0x84, 0x1f, 0xc3, 0xb4, 0x39, 0x5e, 0x34, 0xd8, 0xa3,
+	0x83, 0x8b, 0x27, 0x98, 0xd2, 0x63, 0x2b, 0xc9, 0x08, 0x3f, 0x82, 0x59, 0xb2, 0x1f, 0xef, 0xc3,
+	0x54, 0xdd, 0xa5, 0xc3, 0xf3, 0x1e, 0xdc, 0xa4, 0xff, 0x6e, 0x3d, 0x87, 0xc5, 0x56, 0x37, 0xcd,
+	0x98, 0x48, 0x33, 0xe7, 0xc1, 0x82, 0x0e, 0x34, 0x97, 0x8c, 0x36, 0xb6, 0x5e, 0xf2, 0x0f, 0xff,
+	0x04, 0x00, 0x00, 0xff, 0xff, 0x4f, 0xce, 0x28, 0x0d, 0xf4, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -378,8 +592,8 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type ClientClient interface {
-	AgreementRequest(ctx context.Context, in *AgreeRequestsMessage, opts ...grpc.CallOption) (*Result, error)
-	UpdateRequest(ctx context.Context, in *UpdateRequestsMessage, opts ...grpc.CallOption) (*Result, error)
+	AgreementRequest(ctx context.Context, in *AgreeRequestsMessage, opts ...grpc.CallOption) (*AgreementResult, error)
+	UpdateRequest(ctx context.Context, in *UpdateRequestsMessage, opts ...grpc.CallOption) (*UpdateResult, error)
 	ConfirmPayment(ctx context.Context, in *ConfirmRequestsMessage, opts ...grpc.CallOption) (*Result, error)
 	DirectChannelPayment(ctx context.Context, in *ChannelPayment, opts ...grpc.CallOption) (*DirectPaymentResult, error)
 }
@@ -392,8 +606,8 @@ func NewClientClient(cc *grpc.ClientConn) ClientClient {
 	return &clientClient{cc}
 }
 
-func (c *clientClient) AgreementRequest(ctx context.Context, in *AgreeRequestsMessage, opts ...grpc.CallOption) (*Result, error) {
-	out := new(Result)
+func (c *clientClient) AgreementRequest(ctx context.Context, in *AgreeRequestsMessage, opts ...grpc.CallOption) (*AgreementResult, error) {
+	out := new(AgreementResult)
 	err := c.cc.Invoke(ctx, "/Client/agreementRequest", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -401,8 +615,8 @@ func (c *clientClient) AgreementRequest(ctx context.Context, in *AgreeRequestsMe
 	return out, nil
 }
 
-func (c *clientClient) UpdateRequest(ctx context.Context, in *UpdateRequestsMessage, opts ...grpc.CallOption) (*Result, error) {
-	out := new(Result)
+func (c *clientClient) UpdateRequest(ctx context.Context, in *UpdateRequestsMessage, opts ...grpc.CallOption) (*UpdateResult, error) {
+	out := new(UpdateResult)
 	err := c.cc.Invoke(ctx, "/Client/updateRequest", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -430,8 +644,8 @@ func (c *clientClient) DirectChannelPayment(ctx context.Context, in *ChannelPaym
 
 // ClientServer is the server API for Client service.
 type ClientServer interface {
-	AgreementRequest(context.Context, *AgreeRequestsMessage) (*Result, error)
-	UpdateRequest(context.Context, *UpdateRequestsMessage) (*Result, error)
+	AgreementRequest(context.Context, *AgreeRequestsMessage) (*AgreementResult, error)
+	UpdateRequest(context.Context, *UpdateRequestsMessage) (*UpdateResult, error)
 	ConfirmPayment(context.Context, *ConfirmRequestsMessage) (*Result, error)
 	DirectChannelPayment(context.Context, *ChannelPayment) (*DirectPaymentResult, error)
 }
@@ -440,10 +654,10 @@ type ClientServer interface {
 type UnimplementedClientServer struct {
 }
 
-func (*UnimplementedClientServer) AgreementRequest(ctx context.Context, req *AgreeRequestsMessage) (*Result, error) {
+func (*UnimplementedClientServer) AgreementRequest(ctx context.Context, req *AgreeRequestsMessage) (*AgreementResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AgreementRequest not implemented")
 }
-func (*UnimplementedClientServer) UpdateRequest(ctx context.Context, req *UpdateRequestsMessage) (*Result, error) {
+func (*UnimplementedClientServer) UpdateRequest(ctx context.Context, req *UpdateRequestsMessage) (*UpdateResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateRequest not implemented")
 }
 func (*UnimplementedClientServer) ConfirmPayment(ctx context.Context, req *ConfirmRequestsMessage) (*Result, error) {

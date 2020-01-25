@@ -10,8 +10,8 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	instapay "github.com/sslab-instapay/instapay-go-client/contract"
-	"github.com/sslab-instapay/instapay-go-client/config"
+	instapay "github.com/sslab-instapay/instapay-tee-client/contracts"
+	"github.com/sslab-instapay/instapay-tee-client/config"
 )
 
 func main() {
@@ -22,7 +22,7 @@ func main() {
 
 	// loading instapay contract on the blockchain
 	address := common.HexToAddress(config.EthereumConfig["contractAddr"])  // change to correct address
-	instance, err := instapay.NewContract(address, client)
+	instance, err := instapay.NewInstapay(address, client)
 	if err != nil {
 		log.Fatal(err)
 	}

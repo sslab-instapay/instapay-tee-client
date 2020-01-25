@@ -17,7 +17,6 @@ import (
 	"github.com/sslab-instapay/instapay-tee-client/config"
 	"context"
 	"fmt"
-	"github.com/sslab-instapay/instapay-tee-client/repository"
 	"github.com/sslab-instapay/instapay-tee-client/model"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -38,6 +37,7 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	if err != nil{
 		log.Println(err)
 	}
+
 	account := config.GetAccountConfig()
 	address := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress)
 	nonce, err := client.PendingNonceAt(context.Background(), address)
@@ -56,11 +56,8 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	}
 
 	s := *(*[]C.uchar)(unsafe.Pointer(&hdr))
-	for i := C.uint(0); i < SigLen; i++ {
-		fmt.Printf("%02x", s[i])
-	}
-
-	convertedRawTx := C.GoString(s)
+	var convertedRawTx string
+	convertedRawTx = fmt.Sprintf("%02x", s)
 	rawTxBytes, err := hex.DecodeString(convertedRawTx)
 	tx := new(types.Transaction)
 	rlp.DecodeBytes(rawTxBytes, &tx)
@@ -75,7 +72,6 @@ func SendCloseChannelTransaction(channelId int64) {
 	if err != nil {
 		log.Println(err)
 	}
-
 	address := common.HexToAddress(config.GetAccountConfig().PublicKeyAddress)
 	nonce, err := client.PendingNonceAt(context.Background(), address)
 	if err != nil {
@@ -93,11 +89,8 @@ func SendCloseChannelTransaction(channelId int64) {
 	}
 
 	s := *(*[]C.uchar)(unsafe.Pointer(&hdr))
-	for i := C.uint(0); i < SigLen; i++ {
-		fmt.Printf("%02x", s[i])
-	}
-
-	convertedRawTx := C.GoString(s)
+	var convertedRawTx string
+	convertedRawTx = fmt.Sprintf("%02x", s)
 	rawTxBytes, err := hex.DecodeString(convertedRawTx)
 	tx := new(types.Transaction)
 	rlp.DecodeBytes(rawTxBytes, &tx)
@@ -170,8 +163,8 @@ func ListenContractEvent() {
 func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 
 	account := config.GetAccountConfig()
-	// 내가 리시버 즉 IN 채널
 	log.Println("----- Handle Create Channel Event ----")
+
 	if event.Receiver.String() == config.GetAccountConfig().PublicKeyAddress {
 		// CASE IN CHANNEL
 		channelId := C.uint(uint32(event.Id))
@@ -207,42 +200,28 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 		otherAddress = event.Receiver.String()
 	}
 
-	r, err := client.CommunicationInfoRequest(clientContext, &serverPb.Address{Addr: otherAddress})
+	// TODO 상대 아이피 주소  이런 것들 업데이트
+	_, err = client.CommunicationInfoRequest(clientContext, &serverPb.Address{Addr: otherAddress})
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	channel, err := repository.GetChannelById(event.Id)
-	if err != nil{
-		log.Println(err)
-		return err
-	}
-
-	channel.OtherPort = int(r.Port)
-	channel.OtherIp = r.IPAddress
-	_, err = repository.UpdateChannel(channel)
-	if err != nil{
-		log.Println(err)
-		return err
-	}
 	log.Println("----- Handle Create Channel Event END ----")
 	return nil
 }
 
 func HandleCloseChannelEvent(event model.CloseChannelEvent) {
-	channel, err := repository.GetChannelById(event.Id)
 
-	if err != nil {
-		log.Println("there is no channel")
-	}
-	log.Println("----- Handle Close Channel Event ----")
-	//TODO Close channel Event로 ..
-	channel.Status = model.CLOSED
-	_, err = repository.UpdateChannel(channel)
-	if err != nil {
-		log.Println(err)
-	}
+	log.Println("----- Handle Close Channel Event -----")
+	channelId := C.uint(uint32(event.Id))
+	ownerBal := C.uint(uint32(event.Ownerbal))
+	receiverBal := C.uint(uint32(event.Receiverbal))
+
+	log.Println("----- Start Close Channel Event -----")
+	C.ecall_receive_close_channel_w(channelId, ownerBal, receiverBal)
+	log.Println("----- End Close Channel Event -----")
+
 }
 
 func HandleEjectEvent(event model.EjectEvent) {

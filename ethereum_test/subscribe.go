@@ -5,7 +5,11 @@ import (
 	"log"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+<<<<<<< HEAD
 	instapay "github.com/sslab-instapay/instapay-tee-server/contract"
+=======
+	instapay "github.com/sslab-instapay/instapay-tee-client/contracts"
+>>>>>>> dd04958a0390794c6a6ca6b17c3e268cc7f04360
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -93,22 +97,22 @@ func main() {
 
 func HandleCreateChannelEvent(event model.CreateChannelEvent) {
 
+<<<<<<< HEAD
 	var channel = model.Channel{ChannelId: event.Id.Int64(),
 		Status: model.IDLE, MyAddress: event.Receiver.String(),
 		MyBalance: 0, MyDeposit: 0, OtherAddress: event.Owner.String()}
 	// TODO server에 보냄
 
 	//repository.InsertChannel(channel)
+=======
+>>>>>>> dd04958a0390794c6a6ca6b17c3e268cc7f04360
 }
 
 func HandleCloseChannelEvent(event model.CloseChannelEvent) {
-	channel, err := repository.GetChannelById(event.Id.Int64())
 
-	if err != nil {
-		log.Println("there is no channel")
-		return
-	}
-
+<<<<<<< HEAD
 	channel.Status = model.CLOSED
 	//repository.UpdateChannel(channel)
+=======
+>>>>>>> dd04958a0390794c6a6ca6b17c3e268cc7f04360
 }

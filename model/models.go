@@ -6,8 +6,7 @@ import (
 )
 
 type Account struct {
-	PublicKeyAddress string `json:"publicKeyAddress"`
-	PrivateKey       string
+	PublicKeyAddress string    `json:"publicKeyAddress"`
 	Balance          big.Float `json:"balance"`
 }
 
@@ -22,7 +21,8 @@ type ChannelStatus string
 
 const (
 	// 0, 1, 2, 3
-	IDLE        ChannelStatus = "IDLE"
+	PENDING     ChannelStatus = "PENDING"
+	IDLE                      = "IDLE"
 	PRE_UPDATE                = "PRE_UPDATE"
 	POST_UPDATE               = "POST_UPDATE"
 	CLOSED                    = "CLOSED"
@@ -71,4 +71,14 @@ type CloseChannelEvent struct {
 type EjectEvent struct {
 	Pn              int64
 	Registeredstage int
+}
+
+type PeerInformations struct {
+	PeerInformationList []PeerInformation `json:"peer_informations"`
+}
+
+type PeerInformation struct {
+	PublicKeyAddress string `json:"public_key_address"`
+	IpAddress        string `json:"ip_address"`
+	GrpcPort         int    `json:"grpc_port"`
 }

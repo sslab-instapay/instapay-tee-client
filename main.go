@@ -9,21 +9,43 @@ package main
 import "C"
 
 import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/sslab-instapay/instapay-tee-client/config"
 	instapayGrpc "github.com/sslab-instapay/instapay-tee-client/grpc"
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
-	"net"
-	"log"
-	"fmt"
-	"google.golang.org/grpc"
-	"github.com/gin-gonic/gin"
 	"github.com/sslab-instapay/instapay-tee-client/router"
+		"google.golang.org/grpc"
+	"log"
+	"net"
 	"os"
 	"strconv"
+	"unsafe"
 	"flag"
 	"github.com/sslab-instapay/instapay-tee-client/service"
-	"github.com/sslab-instapay/instapay-tee-client/config"
-	"github.com/sslab-instapay/instapay-tee-client/repository"
+	"github.com/sslab-instapay/instapay-tee-client/util"
 )
+
+func main() {
+	C.initialize_enclave()
+	portNum := flag.String("port", "3001", "port number")
+	grpcPortNum := flag.String("grpc_port", "50001", "grpc_port number")
+	databaseName := flag.String("database_name", "instapay-client", "database Name")
+	peerFileDirectory := flag.String("peer_file_directory", "data/peer/peer.json", "dir")
+
+	flag.Parse()
+
+	os.Setenv("port", *portNum)
+	os.Setenv("grpc_port", *grpcPortNum)
+	os.Setenv("database_name", *databaseName)
+	os.Setenv("peer_file_directory", *peerFileDirectory)
+	LoadPeerInformation(os.Getenv("peer_file_directory"))
+	LoadDataToTEE()
+	go service.ListenContractEvent()
+	go startGrpcServer()
+	startClientWebServer()
+
+}
 
 func startGrpcServer(){
 	log.Println("---Start Grpc Server---")
@@ -43,28 +65,9 @@ func startClientWebServer(){
 
 	defaultRouter.Use(CORSMiddleware())
 	router.RegisterRestRouter(defaultRouter)
-	router.RegisterChannelRouter(defaultRouter)
 	router.RegisterViewRouter(defaultRouter)
 
 	defaultRouter.Run(":" + os.Getenv("port"))
-}
-
-func main() {
-	C.initialize_enclave()
-	portNum := flag.String("port", "3001", "port number")
-	grpcPortNum := flag.String("grpc_port", "50001", "grpc_port number")
-	databaseName := flag.String("database_name", "instapay-client", "database Name")
-
-	flag.Parse()
-
-	os.Setenv("port", *portNum)
-	os.Setenv("grpc_port", *grpcPortNum)
-	os.Setenv("database_name", *databaseName)
-	LoadDataToTEE()
-	go service.ListenContractEvent()
-	go startGrpcServer()
-	startClientWebServer()
-
 }
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -83,47 +86,23 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func LoadDataToTEE(){
-	// TODO 데이터 베이스 데이터를 TEE에 로드하자 (Account, Channel)
-	account := config.GetAccountConfig()
+	C.ecall_load_account_data_w()
+	C.ecall_load_channel_data_w()
 
-	pubKey := account.PublicKeyAddress[2:]
-	privKey := account.PrivateKey
+	var paddrs unsafe.Pointer
 
-	teePublicKey := []C.uchar(pubKey)
-	teePrivateKey := []C.uchar(privKey)
+	paddrs = C.ecall.get_public_addrs_w()
+	paddrSize := 20
+	paddrSlice := (*[1 << 30]C.address)(unsafe.Pointer(paddrs))[:paddrSize:paddrSize]
 
-	C.ecall_preset_account_w(&teePublicKey[0], &teePrivateKey[0])
+	var convertedAddress string
+	convertedAddress = fmt.Sprintf("%02x", paddrSlice[0].addr)
+	convertedAddress = "0x" + convertedAddress
+	fmt.Println("---- Public Key Address ---")
+	fmt.Println(convertedAddress)
+	config.SetAccountConfig(convertedAddress)
+}
 
-	channelList, err := repository.GetOpenedChannelList()
-	if err != nil{
-		log.Println(err)
-	}
-
-	for _, channel := range channelList  {
-		myAddress := []C.uchar(channel.MyAddress)
-		otherAddress := []C.uchar(channel.OtherAddress)
-		otherIpAddress := []C.uchar(channel.OtherIp)
-
-		var ChannelType C.uint
-		var ChannelStatus C.uint
-
-		if channel.Type == "IN" {
-			ChannelType = 1
-		} else if channel.Type == "OUT" {
-			ChannelType = 0
-		}
-
-		if channel.Status == "IDLE" {
-			ChannelStatus = 0
-		} else if channel.Status == "PRE_UPDATE" {
-			ChannelStatus = 1
-		} else if channel.Status == "POST_UPDATE" {
-			ChannelStatus = 2
-		} else if channel.Status == "CLOSED" {
-			ChannelStatus = 3
-		}
-		C.ecall_load_channel_data_w(C.uint(channel.ChannelId), ChannelType, ChannelStatus, &myAddress[0], C.uint(channel.MyDeposit), C.uint(channel.OtherDeposit), C.uint(channel.MyBalance), C.uint(channel.LockedBalance), &otherAddress[0], &otherIpAddress[0], C.uint(channel.OtherPort))
-	}
-
-	log.Println("--- TEE Data Load Successfully!!--- ")
+func LoadPeerInformation(directory string){
+	util.SetPeerInformation(directory)
 }
