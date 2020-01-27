@@ -30,14 +30,12 @@ func main() {
 	C.initialize_enclave()
 	portNum := flag.String("port", "3001", "port number")
 	grpcPortNum := flag.String("grpc_port", "50001", "grpc_port number")
-	databaseName := flag.String("database_name", "instapay-client", "database Name")
 	peerFileDirectory := flag.String("peer_file_directory", "data/peer/peer.json", "dir")
 
 	flag.Parse()
 
 	os.Setenv("port", *portNum)
 	os.Setenv("grpc_port", *grpcPortNum)
-	os.Setenv("database_name", *databaseName)
 	os.Setenv("peer_file_directory", *peerFileDirectory)
 	LoadPeerInformation(os.Getenv("peer_file_directory"))
 	LoadDataToTEE()
@@ -86,6 +84,7 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func LoadDataToTEE(){
+	// TODO data 디렉토리 지정해서 할 수 있게.
 	C.ecall_load_account_data_w()
 	C.ecall_load_channel_data_w()
 
