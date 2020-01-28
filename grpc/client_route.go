@@ -15,7 +15,8 @@ import (
 	"log"
 	"fmt"
 	"time"
-	"github.com/sslab-instapay/instapay-tee-client/util"
+	"unsafe"
+	"reflect"
 )
 
 type ClientGrpc struct {
@@ -35,13 +36,13 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 	}
 
 	//void ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
-	convertedOriginalMsg, convertedSignatureMsg := util.ConvertByteToPointer(in.OriginalMessage, in.Signature)
+	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar
 	var signature *C.uchar
 	C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 
-	originalMessageStr, signatureStr := util.ConvertPointerToByte(originalMsg, signature)
+	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
 	return &clientPb.AgreementResult{PaymentNumber: in.PaymentNumber, Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 }
@@ -59,11 +60,11 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 		amount = append(amount, C.int(int32(channelPayment.Amount)))
 	}
 
-	convertedOriginalMsg, convertedSignatureMsg := util.ConvertByteToPointer(in.OriginalMessage, in.Signature)
+	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 	var originalMsg *C.uchar
 	var signature *C.uchar
 	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
-	originalMessageStr, signatureStr := util.ConvertPointerToByte(originalMsg, signature)
+	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
 	return &clientPb.UpdateResult{PaymentNumber: in.PaymentNumber, Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 }
@@ -71,7 +72,7 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmRequestsMessage) (*clientPb.Result, error) {
 	log.Println("----ConfirmPayment Request Receive----")
 
-	convertedOriginalMsg, convertedSignatureMsg := util.ConvertByteToPointer(in.OriginalMessage, in.Signature)
+	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 	C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
 	log.Println("----ConfirmPayment Request End----")
 
@@ -85,7 +86,7 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.ChannelPayment) (*clientPb.DirectPaymentResult, error) {
 	log.Println("----Direct Channel Payment Request Receive----")
 
-	originalMessagePointer, signaturePointer := util.ConvertByteToPointer(in.OriginalMessage, in.Signature)
+	originalMessagePointer, signaturePointer := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var replyMessage *C.uchar
 	var replySignature *C.uchar
@@ -93,7 +94,56 @@ func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.Chan
 	C.ecall_paid_w(originalMessagePointer, signaturePointer, &replyMessage, &replySignature)
 	log.Println("----Direct Channel Payment Request End----")
 
-	convertedReplyMessage, convertedReplySignature := util.ConvertPointerToByte(replyMessage, replySignature)
+	convertedReplyMessage, convertedReplySignature := convertPointerToByte(replyMessage, replySignature)
 
 	return &clientPb.DirectPaymentResult{Result: true, ReplyMessage: convertedReplyMessage, ReplySignature: convertedReplySignature}, nil
+}
+
+func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar){
+
+	var uOriginal [44]C.uchar
+	var uSignature [65]C.uchar
+
+	for i := 0; i < 44; i++{
+		uOriginal[i] = C.uchar(originalMsg[i])
+	}
+
+	for i := 0; i < 65; i++{
+		uSignature[i] = C.uchar(signature[i])
+	}
+
+	cOriginalMsg := (*C.uchar)(unsafe.Pointer(&uOriginal[0]))
+	cSignature := (*C.uchar)(unsafe.Pointer(&uSignature[0]))
+
+	return cOriginalMsg, cSignature
+}
+
+func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar)([]byte, []byte){
+
+	var returnMsg []byte
+	var returnSignature []byte
+
+	replyMsgHdr := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(originalMsg)),
+		Len: int(44),
+		Cap: int(44),
+	}
+	replyMsgS := *(*[]C.uchar)(unsafe.Pointer(&replyMsgHdr))
+
+	replySigHdr := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(signature)),
+		Len: int(65),
+		Cap: int(65),
+	}
+	replySigS := *(*[]C.uchar)(unsafe.Pointer(&replySigHdr))
+
+	for i := 0; i < 44; i++{
+		returnMsg = append(returnMsg, byte(replyMsgS[i]))
+	}
+
+	for i := 0; i < 65; i++{
+		returnSignature = append(returnSignature, byte(replySigS[i]))
+	}
+
+	return returnMsg, returnSignature
 }
