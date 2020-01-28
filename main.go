@@ -97,7 +97,7 @@ func LoadDataToTEE(keyFile string, channelFile string){
 
 	var paddrs unsafe.Pointer
 
-	paddrs = C.ecall.get_public_addrs_w()
+	paddrs = C.ecall_get_public_addrs_w()
 	paddrSize := 20
 	paddrSlice := (*[1 << 30]C.address)(unsafe.Pointer(paddrs))[:paddrSize:paddrSize]
 
