@@ -59,14 +59,11 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 		amount = append(amount, C.int(int32(channelPayment.Amount)))
 	}
 
-	//void ecall_go_post_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
 	convertedOriginalMsg, convertedSignatureMsg := util.ConvertByteToPointer(in.OriginalMessage, in.Signature)
 	var originalMsg *C.uchar
 	var signature *C.uchar
-	C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
-
+	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 	originalMessageStr, signatureStr := util.ConvertPointerToByte(originalMsg, signature)
-	C.ecall_go_post_update_w()
 
 	return &clientPb.UpdateResult{PaymentNumber: in.PaymentNumber, Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 }
