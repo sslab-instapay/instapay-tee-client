@@ -15,7 +15,7 @@ import (
 	"log"
 	"fmt"
 	"time"
-			"github.com/sslab-instapay/instapay-tee-client/util"
+	"github.com/sslab-instapay/instapay-tee-client/util"
 )
 
 type ClientGrpc struct {
