@@ -15,7 +15,7 @@ import (
 	instapayGrpc "github.com/sslab-instapay/instapay-tee-client/grpc"
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
 	"github.com/sslab-instapay/instapay-tee-client/router"
-		"google.golang.org/grpc"
+	"google.golang.org/grpc"
 	"log"
 	"net"
 	"os"
@@ -28,6 +28,7 @@ import (
 
 func main() {
 	C.initialize_enclave()
+
 	portNum := flag.String("port", "3001", "port number")
 	grpcPortNum := flag.String("grpc_port", "50001", "grpc_port number")
 	peerFileDirectory := flag.String("peer_file_directory", "data/peer/peer.json", "dir")
@@ -41,8 +42,10 @@ func main() {
 	os.Setenv("peer_file_directory", *peerFileDirectory)
 	os.Setenv("key_file", *keyFile)
 	os.Setenv("channel_file", *channelFile)
+
 	LoadPeerInformation(os.Getenv("peer_file_directory"))
 	LoadDataToTEE(os.Getenv("key_file"), os.Getenv("channel_file"))
+
 	go service.ListenContractEvent()
 	go startGrpcServer()
 	startClientWebServer()
@@ -87,8 +90,6 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func LoadDataToTEE(keyFile string, channelFile string){
-	// TODO data 디렉토리 지정해서 할 수 있게.
-
 	kf := C.CString(keyFile)
 	cf := C.CString(channelFile)
 
