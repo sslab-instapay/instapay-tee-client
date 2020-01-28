@@ -50,15 +50,13 @@ func OnchainPaymentHandler(ctx *gin.Context){
 	if err != nil {
 		log.Println(err)
 	}
-
-	toAddress := common.HexToAddress(otherAddress)
-
-	owner := []C.uchar(fromAddress[2:])
-	receiver := []C.uchar(toAddress[2:])
+	convertNonce := C.uint(nonce)
+	owner := []C.uchar(config.GetAccountConfig().PublicKeyAddress[2:])
+	receiver := []C.uchar(otherAddress[2:])
 	convertedAmount := C.uint(amount)
 	SigLen := C.uint(0)
 
-	var sig *C.uchar = C.ecall_onchain_payment_w(nonce, &owner[0], &receiver[0], convertedAmount, &SigLen)
+	sig := C.ecall_onchain_payment_w(convertNonce, &owner[0], &receiver[0], convertedAmount, &SigLen)
 	hdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(sig)),
 		Len:  int(SigLen),
@@ -66,9 +64,6 @@ func OnchainPaymentHandler(ctx *gin.Context){
 	}
 
 	s := *(*[]C.uchar)(unsafe.Pointer(&hdr))
-	for i := C.uint(0); i < SigLen; i++ {
-	    fmt.Printf("%02x", s[i])
-	}
 	var convertedRawTx string
 	convertedRawTx = fmt.Sprintf("%02x", s)
 
