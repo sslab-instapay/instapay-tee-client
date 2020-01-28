@@ -1,5 +1,13 @@
 package util
+
+/*
+#cgo CPPFLAGS: -I/home/xiaofo/sgxsdk/include -I/home/xiaofo/instapay/src/github.com/sslab-instapay/instapay-tee-client
+#cgo LDFLAGS: -L/home/xiaofo/instapay/src/github.com/sslab-instapay/instapay-tee-client -ltee
+
+#include "app.h"
+*/
 import "C"
+
 import (
 	"unsafe"
 	"reflect"
