@@ -2,8 +2,8 @@ package config
 
 import (
 	"github.com/sslab-instapay/instapay-tee-client/model"
-	"strconv"
-	"os"
+	//"strconv"
+	//"os"
 )
 
 var personalAccount = model.Account{}
