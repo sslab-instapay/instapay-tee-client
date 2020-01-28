@@ -31,18 +31,21 @@ func main() {
 	portNum := flag.String("port", "3001", "port number")
 	grpcPortNum := flag.String("grpc_port", "50001", "grpc_port number")
 	peerFileDirectory := flag.String("peer_file_directory", "data/peer/peer.json", "dir")
+	keyFile := flag.String("key_file", "./data/key/k0", "key file")
+	channelFile := flag.String("channel_file", "./data/channel/c0", "channel file")
 
 	flag.Parse()
 
 	os.Setenv("port", *portNum)
 	os.Setenv("grpc_port", *grpcPortNum)
 	os.Setenv("peer_file_directory", *peerFileDirectory)
+	os.Setenv("key_file", *keyFile)
+	os.Setenv("channel_file", *channelFile)
 	LoadPeerInformation(os.Getenv("peer_file_directory"))
-	LoadDataToTEE()
+	LoadDataToTEE(os.Getenv("key_file"), os.Getenv("channel_file"))
 	go service.ListenContractEvent()
 	go startGrpcServer()
 	startClientWebServer()
-
 }
 
 func startGrpcServer(){
@@ -83,10 +86,14 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-func LoadDataToTEE(){
+func LoadDataToTEE(keyFile string, channelFile string){
 	// TODO data 디렉토리 지정해서 할 수 있게.
-	C.ecall_load_account_data_w()
-	C.ecall_load_channel_data_w()
+
+	kf := C.CString(keyFile)
+	cf := C.CString(channelFile)
+
+	C.ecall_load_account_data_w(kf)
+	C.ecall_load_channel_data_w(cf)
 
 	var paddrs unsafe.Pointer
 
