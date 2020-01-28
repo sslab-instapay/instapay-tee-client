@@ -39,7 +39,7 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 
 	var originalMsg *C.uchar
 	var signature *C.uchar
-	C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, originalMsg, signature)
+	C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 
 	originalMessageStr, signatureStr := util.ConvertPointerToByte(originalMsg, signature)
 
@@ -63,7 +63,7 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 	convertedOriginalMsg, convertedSignatureMsg := util.ConvertByteToPointer(in.OriginalMessage, in.Signature)
 	var originalMsg *C.uchar
 	var signature *C.uchar
-	C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, originalMsg, signature)
+	C.ecall_go_pre_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 
 	originalMessageStr, signatureStr := util.ConvertPointerToByte(originalMsg, signature)
 	C.ecall_go_post_update_w()
