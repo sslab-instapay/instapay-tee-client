@@ -81,7 +81,7 @@ func SendCloseChannelTransaction(channelId int64) {
 	ChannelID := C.uint(channelId)
 	SigLen := C.uint(0)
 
-	var sig2 *C.uchar = C.ecall_close_channel_w(nonce, ChannelID, &SigLen)
+	var sig2 *C.uchar = C.ecall_close_channel_w(C.uint(nonce), ChannelID, &SigLen)
 	hdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(sig2)),
 		Len:  int(SigLen),
