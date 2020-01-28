@@ -5,37 +5,37 @@ import (
 							"unsafe"
 )
 
-func GetAllDepositValue() (int64, error) {
+func GetAllDepositValue() (int, error) {
 
 	var ochs unsafe.Pointer
-	var depositValue int64
+	var depositValue int
 
 	ochs = C.ecall_get_open_channels_w()
 	channelSize := 68
 	channelSlice := (*[1 << 30]C.channel)(unsafe.Pointer(ochs))[:channelSize:channelSize]
 
-	openChannelNumbers := C.ecall_get_num_open_channels()
+	openChannelNumbers := C.ecall_get_num_open_channels_w()
 
 	for i := 0; i < openChannelNumbers; i++{
-		depositValue += int64(channelSlice[i].m_my_deposit)
+		depositValue += int(channelSlice[i].m_my_deposit)
 	}
 
 	return depositValue, nil
 }
 
-func GetOffChainBalance() (int64, error) {
+func GetOffChainBalance() (int, error) {
 
 	var ochs unsafe.Pointer
-	var offchainBalance int64
+	var offchainBalance int
 
 	ochs = C.ecall_get_open_channels_w()
 	channelSize := 68
 	channelSlice := (*[1 << 30]C.channel)(unsafe.Pointer(ochs))[:channelSize:channelSize]
 
-	openChannelNumbers := C.ecall_get_num_open_channels()
+	openChannelNumbers := int(C.ecall_get_num_open_channels_w())
 
 	for i := 0; i < openChannelNumbers; i++{
-		offchainBalance += int64(channelSlice[i].m_my_balance)
+		offchainBalance += int(channelSlice[i].m_balance)
 	}
 	return offchainBalance, nil
 }

@@ -12,9 +12,9 @@ type Account struct {
 
 type AccountDTO struct {
 	PublicKeyAddress string `json:"address"`
-	Balance          int64  `json:"balance"`
-	OffChainDeposit  int64  `json:"offchainDeposit"`
-	OffChainBalance  int64  `json:"offchainBalance"`
+	Balance          int  `json:"balance"`
+	OffChainDeposit  int  `json:"offchainDeposit"`
+	OffChainBalance  int  `json:"offchainBalance"`
 }
 
 type ChannelStatus string
@@ -46,10 +46,10 @@ type Channel struct {
 	Type          ChannelType   `bson:"channelType" json:"channelType"`
 	Status        ChannelStatus `bson:"channelStatus" json:"channelStatus"`
 	MyAddress     string        `bson:"myAddress" json:"myAddress"`
-	MyDeposit     int64         `bson:"myDeposit" json:"myDeposit"`
-	OtherDeposit  int64         `bson:"otherDeposit" json:"otherDeposit"`
-	MyBalance     int64         `bson:"myBalance" json:"myBalance"`
-	LockedBalance int64         `bson:"lockedBalance" json:"lockedBalance"`
+	MyDeposit     int         `bson:"myDeposit" json:"myDeposit"`
+	OtherDeposit  int         `bson:"otherDeposit" json:"otherDeposit"`
+	MyBalance     int         `bson:"myBalance" json:"myBalance"`
+	LockedBalance int         `bson:"lockedBalance" json:"lockedBalance"`
 	OtherAddress  string        `bson:"otherAddress" json:"otherAddress"`
 	OtherIp       string        `bson:"otherIp" json:"otherIp"`
 	OtherPort     int           `bson:"otherPort" json:"otherPort"`

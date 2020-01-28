@@ -67,13 +67,12 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 		log.Println(err)
 	}
 
-	// TODO 채널 ID로부터 상대 주소 받아와야함
-	channel, err := repository.GetChannelById(int64(channelId))
+	channel, err := repository.GetChannelById(channelId)
 	if err != nil{
 		log.Println(err)
 	}
 
-	peerInformation, _,err := util.GetPeerInformationByAddress("0xww")
+	peerInformation, _,err := util.GetPeerInformationByAddress(channel.OtherAddress)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"success": false})
 		return
@@ -165,7 +164,6 @@ func GetChannelListHandler(ctx *gin.Context) {
 	})
 }
 
-// TODO repository 변경에 따른 코드 변화 필요.
 func GetWalletInformationHandler(ctx *gin.Context) {
 
 	account := config.GetAccountConfig()
@@ -190,7 +188,7 @@ func GetWalletInformationHandler(ctx *gin.Context) {
 
 	accountDto := model.AccountDTO{
 		PublicKeyAddress: account.PublicKeyAddress,
-		Balance:          balance,
+		Balance:          int(balance),
 		OffChainDeposit:  offchainDeposit,
 		OffChainBalance:  offchainBalance,
 	}
