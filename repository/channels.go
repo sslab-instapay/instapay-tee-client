@@ -1,6 +1,13 @@
 package repository
 
+/*
+#cgo CPPFLAGS: -I/home/xiaofo/sgxsdk/include -I/home/xiaofo/instapay/src/github.com/sslab-instapay/instapay-tee-client
+#cgo LDFLAGS: -L/home/xiaofo/instapay/src/github.com/sslab-instapay/instapay-tee-client -ltee
+
+#include "app.h"
+*/
 import "C"
+
 import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,7 +28,7 @@ func GetAllChannelsLockedBalance() (int64, error) {
 	channelSize := 68
 	channelSlice := (*[1 << 30]C.channel)(unsafe.Pointer(ochs))[:channelSize:channelSize]
 
-	openChannelNumbers := C.ecall_get_num_open_channels()
+	openChannelNumbers := C.ecall_get_num_open_channels_w()
 
 	for i := 0; i < openChannelNumbers; i++ {
 		lockedBalances += int64(channelSlice[i].m_locked_balance)
@@ -101,7 +108,7 @@ func GetOpenedChannelList() ([]model.Channel, error) {
 	channelSize := 68
 	channelSlice := (*[1 << 30]C.channel)(unsafe.Pointer(ochs))[:channelSize:channelSize]
 
-	openChannelNumbers := C.ecall_get_num_open_channels()
+	openChannelNumbers := C.ecall_get_num_open_channels_w()
 
 	for i := 0; i < openChannelNumbers; i++ {
 		var channel model.Channel

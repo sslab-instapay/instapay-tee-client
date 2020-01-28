@@ -1,8 +1,15 @@
 package repository
 
+/*
+#cgo CPPFLAGS: -I/home/xiaofo/sgxsdk/include -I/home/xiaofo/instapay/src/github.com/sslab-instapay/instapay-tee-client
+#cgo LDFLAGS: -L/home/xiaofo/instapay/src/github.com/sslab-instapay/instapay-tee-client -ltee
+
+#include "app.h"
+*/
 import "C"
+
 import (
-							"unsafe"
+	"unsafe"
 )
 
 func GetAllDepositValue() (int64, error) {
@@ -14,7 +21,7 @@ func GetAllDepositValue() (int64, error) {
 	channelSize := 68
 	channelSlice := (*[1 << 30]C.channel)(unsafe.Pointer(ochs))[:channelSize:channelSize]
 
-	openChannelNumbers := C.ecall_get_num_open_channels()
+	openChannelNumbers := C.ecall_get_num_open_channels_w()
 
 	for i := 0; i < openChannelNumbers; i++{
 		depositValue += int64(channelSlice[i].m_my_deposit)
@@ -32,7 +39,7 @@ func GetOffChainBalance() (int64, error) {
 	channelSize := 68
 	channelSlice := (*[1 << 30]C.channel)(unsafe.Pointer(ochs))[:channelSize:channelSize]
 
-	openChannelNumbers := C.ecall_get_num_open_channels()
+	openChannelNumbers := C.ecall_get_num_open_channels_w()
 
 	for i := 0; i < openChannelNumbers; i++{
 		offchainBalance += int64(channelSlice[i].m_my_balance)
