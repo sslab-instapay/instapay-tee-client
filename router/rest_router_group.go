@@ -8,7 +8,7 @@ import (
 // 라우터 등록 코드
 func RegisterRestRouter(router *gin.Engine) {
 
-	accountRouter := router.Group("account")
+	accountRouter := router.Group("accounts")
 	{
 		accountRouter.GET("list", controller.AccountInformationHandler)
 		accountRouter.POST("payment", controller.OnchainPaymentHandler)
@@ -17,11 +17,11 @@ func RegisterRestRouter(router *gin.Engine) {
 	{
 		walletRouter.GET("", controller.GetWalletInformationHandler)
 	}
-	channelRouter := router.Group("channel")
+	channelRouter := router.Group("channels")
 	{
 		channelRouter.GET("list", controller.GetChannelListHandler)
 	}
-	channelRequestRouter := router.Group("channel/requests")
+	channelRequestRouter := router.Group("channels/requests")
 	{
 		channelRequestRouter.POST("open", controller.OpenChannelHandler)
 		channelRequestRouter.POST("direct", controller.DirectPayChannelHandler)

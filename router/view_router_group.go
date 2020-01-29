@@ -25,7 +25,7 @@ func RegisterViewRouter(router *gin.Engine) {
 		viewRouter.GET("channels/list", func(context *gin.Context) {
 			channelList, err := repository.GetOpenedChannelList()
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
 			context.HTML(http.StatusOK, "channels.tmpl", gin.H{"channelList": channelList})
 		})
