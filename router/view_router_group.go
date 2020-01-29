@@ -6,6 +6,7 @@ import (
 	"log"
 	"github.com/sslab-instapay/instapay-tee-client/repository"
 	"github.com/sslab-instapay/instapay-tee-client/config"
+	"github.com/sslab-instapay/instapay-tee-client/service"
 )
 
 func RegisterViewRouter(router *gin.Engine) {
@@ -16,8 +17,11 @@ func RegisterViewRouter(router *gin.Engine) {
 		viewRouter.GET("accounts/list", func(context *gin.Context) {
 			//gin.H 부분에서 변수 다루는 것.
 			account := config.GetAccountConfig()
+			balance, _ := service.GetBalance()
+			convertedBalance, _ := balance.Int64()
 			context.HTML(http.StatusOK, "account.tmpl", gin.H{
 				"account": account,
+				"balance": convertedBalance,
 			})
 		})
 
@@ -43,6 +47,20 @@ func RegisterViewRouter(router *gin.Engine) {
 				log.Fatal(err)
 			}
 			context.HTML(http.StatusOK, "closedChannel.tmpl", gin.H{"closedChannelList": closedChannelList})
+		})
+
+		viewRouter.GET("channels/pay", func(context *gin.Context) {
+			openedChannelList, err := repository.GetOpenedChannelList()
+			if err != nil {
+				log.Println(err)
+			}
+
+			var idList []int
+			for _, channel := range openedChannelList{
+				idList = append(idList, int(channel.ChannelId))
+			}
+
+			context.HTML(http.StatusOK, "pay.tmpl", gin.H{"channelIdList": idList})
 		})
 	}
 }
