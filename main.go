@@ -87,13 +87,14 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func LoadDataToTEE(keyFile string, channelFile string){
-	// TODO data 디렉토리 지정해서 할 수 있게.
 
 	kf := C.CString(keyFile)
 	cf := C.CString(channelFile)
 
 	C.ecall_load_account_data_w(kf)
 	C.ecall_load_channel_data_w(cf)
+	defer C.free(unsafe.Pointer(kf))
+	defer C.free(unsafe.Pointer(cf))
 
 	var paddrs unsafe.Pointer
 
