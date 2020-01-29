@@ -24,6 +24,7 @@ import (
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
 	"github.com/sslab-instapay/instapay-tee-client/util"
 	"unsafe"
+	"reflect"
 )
 
 var ExecutionTime time.Time
@@ -100,25 +101,15 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 	_, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	r, err := client.DirectChannelPayment(ctx, &clientPb.ChannelPayment{ChannelId: int64(channelId), Amount: int64(amount)})
+	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
+	r, err := client.DirectChannelPayment(ctx, &clientPb.ChannelPayment{ChannelId: int64(channelId), Amount: int64(amount), OriginalMessage: originalMessageByte, Signature: signatureByte})
 	if err != nil {
-		log.Fatalf("could not greet: %v", err)
+		log.Println("could not greet: %v", err)
 	}
+
 	log.Println(r.Result)
-
 	if r.Result {
-		var originalMessage [44]C.uchar
-		for i:= 0; i < 44; i++ {
-			originalMessage[i] = C.uchar(r.ReplyMessage[i])
-		}
-		originalMessagePointer := (*C.uchar)(unsafe.Pointer(&originalMessage[0]))
-
-		var signature [65]C.uchar
-		for i:= 0; i < 65; i++ {
-			signature[i] = C.uchar(r.ReplySignature[i])
-		}
-		signaturePointer := (*C.uchar)(unsafe.Pointer(&signature))
-		log.Println("----- payment accept w start -----")
+		originalMessagePointer, signaturePointer := convertByteToPointer(r.ReplyMessage, r.ReplySignature)
 		C.ecall_pay_accepted_w(originalMessagePointer, signaturePointer)
 		log.Println("----- payment accept w end -----")
 		ctx.JSON(http.StatusOK, gin.H{"success": r.Result})
@@ -221,4 +212,53 @@ func GetWalletInformationHandler(ctx *gin.Context) {
 		"account": accountDto, "inChannelList": inChannelList, "outChannelList": outChannelList,
 	})
 
+}
+
+func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar){
+
+	var uOriginal [44]C.uchar
+	var uSignature [65]C.uchar
+
+	for i := 0; i < 44; i++{
+		uOriginal[i] = C.uchar(originalMsg[i])
+	}
+
+	for i := 0; i < 65; i++{
+		uSignature[i] = C.uchar(signature[i])
+	}
+
+	cOriginalMsg := (*C.uchar)(unsafe.Pointer(&uOriginal[0]))
+	cSignature := (*C.uchar)(unsafe.Pointer(&uSignature[0]))
+
+	return cOriginalMsg, cSignature
+}
+
+func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar)([]byte, []byte){
+
+	var returnMsg []byte
+	var returnSignature []byte
+
+	replyMsgHdr := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(originalMsg)),
+		Len: int(44),
+		Cap: int(44),
+	}
+	replyMsgS := *(*[]C.uchar)(unsafe.Pointer(&replyMsgHdr))
+
+	replySigHdr := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(signature)),
+		Len: int(65),
+		Cap: int(65),
+	}
+	replySigS := *(*[]C.uchar)(unsafe.Pointer(&replySigHdr))
+
+	for i := 0; i < 44; i++{
+		returnMsg = append(returnMsg, byte(replyMsgS[i]))
+	}
+
+	for i := 0; i < 65; i++{
+		returnSignature = append(returnSignature, byte(replySigS[i]))
+	}
+
+	return returnMsg, returnSignature
 }

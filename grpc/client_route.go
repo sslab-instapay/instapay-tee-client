@@ -86,8 +86,9 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.ChannelPayment) (*clientPb.DirectPaymentResult, error) {
 	log.Println("----Direct Channel Payment Request Receive----")
 
+	log.Println("--- Start Byte to Pointer ---")
 	originalMessagePointer, signaturePointer := convertByteToPointer(in.OriginalMessage, in.Signature)
-
+	log.Println("--- End Byte to Pointer ---")
 	var replyMessage *C.uchar
 	var replySignature *C.uchar
 
