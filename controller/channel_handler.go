@@ -69,6 +69,7 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 	if err != nil{
 		log.Println(err)
 	}
+
 	amount, err := strconv.Atoi(amountParam)
 	if err != nil{
 		log.Println(err)
