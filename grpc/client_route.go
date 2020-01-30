@@ -23,19 +23,7 @@ type ClientGrpc struct {
 }
 
 func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeRequestsMessage) (*clientPb.AgreementResult, error) {
-	// 동의한다는 메시지를 전달
-	channelPayments := in.ChannelPayments
 
-	var channelIds []C.uint
-	var amount []C.int
-
-	// Extract Data
-	for _, channelPayment := range channelPayments.ChannelPayments{
-		channelIds = append(channelIds, C.uint(uint32(channelPayment.ChannelId)))
-		amount = append(amount, C.int(int32(channelPayment.Amount)))
-	}
-
-	//void ecall_go_pre_update_w(unsigned char *msg, unsigned char *signature, unsigned char **original_msg, unsigned char **output);
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar
@@ -44,21 +32,11 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
-	return &clientPb.AgreementResult{PaymentNumber: in.PaymentNumber, Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
+	return &clientPb.AgreementResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 }
 
 func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateRequestsMessage) (*clientPb.UpdateResult, error) {
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
-	channelPayments := in.ChannelPayments
-
-	var channelIds []C.uint
-	var amount []C.int
-
-	// Extract Data
-	for _, channelPayment := range channelPayments.ChannelPayments{
-		channelIds = append(channelIds, C.uint(uint32(channelPayment.ChannelId)))
-		amount = append(amount, C.int(int32(channelPayment.Amount)))
-	}
 
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 	var originalMsg *C.uchar
@@ -66,7 +44,7 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
-	return &clientPb.UpdateResult{PaymentNumber: in.PaymentNumber, Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
+	return &clientPb.UpdateResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 }
 
 func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmRequestsMessage) (*clientPb.Result, error) {
@@ -80,7 +58,7 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 	fmt.Println(C.ecall_get_balance_w(C.uint(2)))
 	fmt.Println(time.Since(controller.ExecutionTime))
 
-	return &clientPb.Result{PaymentNumber: in.PaymentNumber, Result: true}, nil
+	return &clientPb.Result{Result: true}, nil
 }
 
 func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.ChannelPayment) (*clientPb.DirectPaymentResult, error) {

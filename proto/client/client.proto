@@ -8,21 +8,16 @@ service Client {
 }
 
 message AgreeRequestsMessage {
-    int64 paymentNumber = 1;
-    ChannelPayments channelPayments = 2;
     bytes originalMessage = 3;
     bytes signature = 4;
 }
 
 message UpdateRequestsMessage{
-    int64 paymentNumber = 1;
-    ChannelPayments channelPayments = 2;
     bytes originalMessage = 3;
     bytes signature = 4;
 }
 
 message ConfirmRequestsMessage{
-    int64 paymentNumber = 1;
     bytes originalMessage = 2;
     bytes signature = 3;
 }
@@ -39,14 +34,12 @@ message ChannelPayments {
 }
 
 message AgreementResult{
-    int64 paymentNumber = 1;
     bool result = 2;
     bytes originalMessage = 3;
     bytes signature = 4;
 }
 
 message UpdateResult{
-    int64 paymentNumber = 1;
     bool result = 2;
     bytes originalMessage = 3;
     bytes signature = 4;
