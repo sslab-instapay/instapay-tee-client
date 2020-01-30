@@ -9,8 +9,6 @@ message paymentRequestMessage {
     string from = 1;
     string to = 2;
     int64 amount = 3;
-    string originalMessage = 4;
-    string signature = 5;
 }
 
 message address {

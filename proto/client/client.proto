@@ -8,11 +8,13 @@ service Client {
 }
 
 message AgreeRequestsMessage {
+    ChannelPayments channelPayments = 2;
     bytes originalMessage = 3;
     bytes signature = 4;
 }
 
 message UpdateRequestsMessage{
+    ChannelPayments channelPayments = 2;
     bytes originalMessage = 3;
     bytes signature = 4;
 }
@@ -25,8 +27,6 @@ message ConfirmRequestsMessage{
 message ChannelPayment {
     int64 channelId = 1;
     int64 amount = 2;
-    bytes originalMessage = 3;
-    bytes signature = 4;
 }
 
 message ChannelPayments {
