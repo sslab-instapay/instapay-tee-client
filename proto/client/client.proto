@@ -4,7 +4,7 @@ service Client {
     rpc agreementRequest(AgreeRequestsMessage) returns (AgreementResult) {}
     rpc updateRequest(UpdateRequestsMessage) returns (UpdateResult) {}
     rpc confirmPayment(ConfirmRequestsMessage) returns (Result) {}
-    rpc directChannelPayment(ChannelPayment) returns (DirectPaymentResult) {}
+    rpc directChannelPayment(DirectChannelPaymentMessage) returns (DirectPaymentResult) {}
 }
 
 message AgreeRequestsMessage {
@@ -32,7 +32,7 @@ message ChannelPayment{
     int64 amount = 2;
 }
 
-message DirectChannelPayment {
+message DirectChannelPaymentMessage {
     int64 channelId = 1;
     int64 amount = 2;
     bytes originalMessage = 3;

@@ -102,7 +102,7 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 	defer cancel()
 
 	originalMessageByte, signatureByte := convertPointerToByte(originalMessage, signature)
-	r, err := client.DirectChannelPayment(ctx, &clientPb.ChannelPayment{ChannelId: int64(channelId), Amount: int64(amount), OriginalMessage: originalMessageByte, Signature: signatureByte})
+	r, err := client.DirectChannelPayment(ctx, &clientPb.DirectChannelPaymentMessage{ChannelId: int64(channelId), Amount: int64(amount), OriginalMessage: originalMessageByte, Signature: signatureByte})
 	if err != nil {
 		log.Println("could not greet: %v", err)
 	}
