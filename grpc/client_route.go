@@ -60,7 +60,7 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 	return &clientPb.Result{Result: true}, nil
 }
 
-func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.ChannelPayment) (*clientPb.DirectPaymentResult, error) {
+func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.DirectChannelPayment) (*clientPb.DirectPaymentResult, error) {
 	log.Println("----Direct Channel Payment Request Receive----")
 
 	log.Println("--- Start Byte to Pointer ---")
