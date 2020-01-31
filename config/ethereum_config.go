@@ -12,7 +12,7 @@ var EthereumConfig = map[string]string{
 
 	/* grpc configuration */
 	"serverGrpcHost": "141.223.121.139",
-	"serverGrpcPort": "50101",
+	"serverGrpcPort": "50004",
 	"serverProto":    "",
 	"server":         "",
 	"myGrpcPort":     "", //process.argv[3]
