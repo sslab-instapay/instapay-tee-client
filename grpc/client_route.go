@@ -11,10 +11,10 @@ import "C"
 import (
 	"context"
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
-	"github.com/sslab-instapay/instapay-tee-client/controller"
+	// "github.com/sslab-instapay/instapay-tee-client/controller"
 	"log"
-	"fmt"
-	"time"
+	// "fmt"
+	// "time"
 	"unsafe"
 	"reflect"
 )
@@ -38,9 +38,11 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateRequestsMessage) (*clientPb.UpdateResult, error) {
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
+
 	var originalMsg *C.uchar
 	var signature *C.uchar
 	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
+
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
 	return &clientPb.UpdateResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
@@ -53,9 +55,9 @@ func (s *ClientGrpc) ConfirmPayment(ctx context.Context, in *clientPb.ConfirmReq
 	C.ecall_go_idle_w(convertedOriginalMsg, convertedSignatureMsg)
 	log.Println("----ConfirmPayment Request End----")
 
-	fmt.Println(C.ecall_get_balance_w(C.uint(1)))
-	fmt.Println(C.ecall_get_balance_w(C.uint(2)))
-	fmt.Println(time.Since(controller.ExecutionTime))
+	// fmt.Println(C.ecall_get_balance_w(C.uint(1)))
+	// fmt.Println(C.ecall_get_balance_w(C.uint(2)))
+	// fmt.Println(time.Since(controller.ExecutionTime))
 
 	return &clientPb.ConfirmResult{Result: true}, nil
 }
