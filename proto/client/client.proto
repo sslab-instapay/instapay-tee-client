@@ -3,7 +3,7 @@ syntax = "proto3";
 service Client {
     rpc agreementRequest(AgreeRequestsMessage) returns (AgreementResult) {}
     rpc updateRequest(UpdateRequestsMessage) returns (UpdateResult) {}
-    rpc confirmPayment(ConfirmRequestsMessage) returns (Result) {}
+    rpc confirmPayment(ConfirmRequestsMessage) returns (ConfirmResult) {}
     rpc directChannelPayment(DirectChannelPaymentMessage) returns (DirectPaymentResult) {}
 }
 
@@ -57,7 +57,7 @@ message UpdateResult{
     bytes signature = 4;
 }
 
-message Result {
+message ConfirmResult {
     int64 paymentNumber = 1;
     bool result = 2;
 }
