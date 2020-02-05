@@ -29,6 +29,7 @@ import (
 	"unsafe"
 	"encoding/hex"
 	"github.com/ethereum/go-ethereum/rlp"
+	"os"
 )
 
 func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error) {
@@ -62,6 +63,8 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	tx := new(types.Transaction)
 	rlp.DecodeBytes(rawTxBytes, &tx)
 	client.SendTransaction(context.Background(), tx)
+
+	defer C.free(unsafe.Pointer(sig))
 
 	return "", nil
 }
@@ -207,6 +210,16 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 		return err
 	}
 
+	var defaultDirectory string
+	if os.Getenv("channel_file") == "" {
+		defaultDirectory = "./data/channel/c0"
+	}else{
+		defaultDirectory = os.Getenv("channel_file")
+	}
+
+	cf := C.CString(defaultDirectory)
+	C.ecall_store_channel_data_w(cf)
+
 	log.Println("----- Handle Create Channel Event END ----")
 	return nil
 }
@@ -220,6 +233,16 @@ func HandleCloseChannelEvent(event model.CloseChannelEvent) {
 
 	log.Println("----- Start Close Channel Event -----")
 	C.ecall_receive_close_channel_w(channelId, ownerBal, receiverBal)
+
+	var defaultDirectory string
+	if os.Getenv("channel_file") == "" {
+		defaultDirectory = "./data/channel/c0"
+	}else{
+		defaultDirectory = os.Getenv("channel_file")
+	}
+
+	cf := C.CString(defaultDirectory)
+	C.ecall_store_channel_data_w(cf)
 	log.Println("----- End Close Channel Event -----")
 
 }

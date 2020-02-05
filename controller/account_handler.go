@@ -25,6 +25,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
 	"encoding/hex"
+	"os"
 )
 
 func AccountInformationHandler(context *gin.Context) {
@@ -42,6 +43,38 @@ func AccountInformationHandler(context *gin.Context) {
 	}
 
 }
+
+//func CreateAccountHandler(context *gin.Context){
+//
+//	var defaultDirectory string
+//	var kf *C.char
+//	if os.Getenv("key_file") == ""{
+//		defaultDirectory = "data/key/k0"
+//		kf = C.CString(defaultDirectory)
+//	}else{
+//		defaultDirectory = os.Getenv("key_file")
+//		kf = C.CString(defaultDirectory)
+//	}
+//
+//	C.ecall_create_account_w()
+//	C.ecall_store_account_data_w(kf)
+//	defer C.free(unsafe.Pointer(kf))
+//
+//	var paddrs unsafe.Pointer
+//
+//	paddrs = C.ecall_get_public_addrs_w()
+//	paddrSize := 20
+//	paddrSlice := (*[1 << 30]C.address)(unsafe.Pointer(paddrs))[:paddrSize:paddrSize]
+//
+//	var convertedAddress string
+//	convertedAddress = fmt.Sprintf("%02x", paddrSlice[0].addr)
+//	convertedAddress = "0x" + convertedAddress
+//	fmt.Println("---- Public Key Address ---")
+//	fmt.Println(convertedAddress)
+//	config.SetAccountConfig(convertedAddress)
+//
+//	context.JSON(http.StatusOK, gin.H{"address": config.GetAccountConfig().PublicKeyAddress})
+//}
 
 func OnchainPaymentHandler(ctx *gin.Context){
 	amount, err := strconv.Atoi(ctx.PostForm("amount"))

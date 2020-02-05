@@ -76,6 +76,9 @@ func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.Dire
 
 	convertedReplyMessage, convertedReplySignature := convertPointerToByte(replyMessage, replySignature)
 
+	defer C.free(unsafe.Pointer(replyMessage))
+	defer C.free(unsafe.Pointer(replySignature))
+
 	return &clientPb.DirectPaymentResult{Result: true, ReplyMessage: convertedReplyMessage, ReplySignature: convertedReplySignature}, nil
 }
 

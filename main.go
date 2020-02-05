@@ -51,7 +51,7 @@ func main() {
 	startClientWebServer()
 }
 
-func startGrpcServer(){
+func startGrpcServer() {
 	log.Println("---Start Grpc Server---")
 	grpcPort, err := strconv.Atoi(os.Getenv("grpc_port"))
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
@@ -63,7 +63,7 @@ func startGrpcServer(){
 	grpcServer.Serve(lis)
 }
 
-func startClientWebServer(){
+func startClientWebServer() {
 	defaultRouter := gin.Default()
 	defaultRouter.LoadHTMLGlob("templates/*")
 
@@ -89,7 +89,30 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-func LoadDataToTEE(keyFile string, channelFile string){
+func CreateAccount() {
+	defaultDirectory := "./data/key/k0"
+	var kf *C.char
+	kf = C.CString(defaultDirectory)
+
+	C.ecall_create_account_w()
+	C.ecall_store_account_data_w(kf)
+	defer C.free(unsafe.Pointer(kf))
+
+	var paddrs unsafe.Pointer
+
+	paddrs = C.ecall_get_public_addrs_w()
+	paddrSize := 20
+	paddrSlice := (*[1 << 30]C.address)(unsafe.Pointer(paddrs))[:paddrSize:paddrSize]
+
+	var convertedAddress string
+	convertedAddress = fmt.Sprintf("%02x", paddrSlice[0].addr)
+	convertedAddress = "0x" + convertedAddress
+	fmt.Println("---- Public Key Address ---")
+	fmt.Println(convertedAddress)
+	config.SetAccountConfig(convertedAddress)
+}
+
+func LoadDataToTEE(keyFile string, channelFile string) {
 
 	kf := C.CString(keyFile)
 	cf := C.CString(channelFile)
@@ -113,6 +136,6 @@ func LoadDataToTEE(keyFile string, channelFile string){
 	config.SetAccountConfig(convertedAddress)
 }
 
-func LoadPeerInformation(directory string){
+func LoadPeerInformation(directory string) {
 	util.SetPeerInformation(directory)
 }
