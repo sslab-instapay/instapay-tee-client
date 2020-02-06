@@ -88,7 +88,7 @@ func GetClosedChannelList() ([]model.Channel, error) {
 		}
 		s1 := *(*[]C.uchar)(unsafe.Pointer(&hdr1))
 		var otherAddress string
-		otherAddress = fmt.Sprint("%02x", s1)
+		otherAddress = fmt.Sprintf("%02x", s1)
 		channel.OtherAddress = "0x" + otherAddress
 		channelList = append(channelList, channel)
 	}
