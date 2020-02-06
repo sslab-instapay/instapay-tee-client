@@ -105,7 +105,7 @@ func ListenContractEvent() {
 	log.Println("---Start Listen Contract Event---")
 	client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
 	if err != nil {
-		log.Println(err)
+		log.Fatal("Cannot connect Ethereum So, End Client")
 	}
 	contractAddress := common.HexToAddress(config.EthereumConfig["contractAddr"])
 
