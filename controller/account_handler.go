@@ -25,10 +25,10 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
 	"encoding/hex"
-	"os"
 )
 
 func AccountInformationHandler(context *gin.Context) {
+	// TODO Balance 관련 테스트 요망
 	account := config.GetAccountConfig()
 	balance, _ := service.GetBalance()
 
