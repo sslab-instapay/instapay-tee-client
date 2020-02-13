@@ -18,10 +18,10 @@ func RegisterViewRouter(router *gin.Engine) {
 			//gin.H 부분에서 변수 다루는 것.
 			account := config.GetAccountConfig()
 			balance, _ := service.GetBalance()
-			convertedBalance, _ := balance.Int64()
+			balanceStr := balance.String()
 			context.HTML(http.StatusOK, "account.tmpl", gin.H{
 				"account": account,
-				"balance": convertedBalance,
+				"balance": balanceStr,
 			})
 		})
 
