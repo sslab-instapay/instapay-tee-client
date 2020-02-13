@@ -32,6 +32,9 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
 
+	defer C.free(unsafe.Pointer(originalMsg))
+	defer C.free(unsafe.Pointer(signature))
+
 	return &clientPb.AgreementResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 }
 
@@ -44,6 +47,8 @@ func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateReque
 	C.ecall_go_post_update_w(convertedOriginalMsg, convertedSignatureMsg, &originalMsg, &signature)
 
 	originalMessageStr, signatureStr := convertPointerToByte(originalMsg, signature)
+	defer C.free(unsafe.Pointer(originalMsg))
+	defer C.free(unsafe.Pointer(signature))
 
 	return &clientPb.UpdateResult{Result: true, OriginalMessage: originalMessageStr, Signature: signatureStr}, nil
 }
