@@ -19,14 +19,14 @@ go run main.go -port=3001 -grpc_port=50001 -database_name=instapay-client
 
 
 
-세 가지 쓰레드로 구성됨.
+## 프로그램은 크게 세 가지 파트로 구성
 
 1. 이더리움 결제채널 이벤트 받는 쓰레드.
 2. Grpc 서버 (다른 사용자와 통신할 때 사용)
 3. 웹 서버 (사용자 정보 확인 결제 채널 정보 및 결제 요청 인터페이스)
 
 
-//디렉토리 별 설명
+## 디렉토리 별 설명
 1. config => 이더리움, 계정 정보 관련 셋업
 2. router => 사용자 인터페이스 관련 웹 경로 정보
 ex) templates/channels/list
@@ -40,7 +40,7 @@ ex) templates/channels/list
 10. data => 프리 로드할 sealed된 공개/키 페어 파일
 
 
-실행 스크립트 예 
+## 실행 스크립트 예
 
 1. Alice.sh => 사용자 앨리스 가정
 ```sh
