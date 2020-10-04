@@ -30,10 +30,10 @@ import (
 func main() {
 	C.initialize_enclave()
 
-	portNum := flag.String("port", "3001", "port number")
-	grpcPortNum := flag.String("grpc_port", "50001", "grpc_port number")
+	portNum := flag.String("port", "3003", "port number")
+	grpcPortNum := flag.String("grpc_port", "50003", "grpc_port number")
 	peerFileDirectory := flag.String("peer_file_directory", "data/peer/peer.json", "dir")
-	keyFile := flag.String("key_file", "./data/key/k0", "key file")
+	keyFile := flag.String("key_file", "./data/key/k2", "key file")
 	channelFile := flag.String("channel_file", "./data/channel/c0", "channel file")
 
 	flag.Parse()
@@ -44,15 +44,9 @@ func main() {
 	os.Setenv("key_file", *keyFile)
 	os.Setenv("channel_file", *channelFile)
 
-	LoadPeerInformation(os.Getenv("peer_file_directory"))
-	// CreateAccount(os.Getenv("peer_file_directory"))
-	if fileExists(*keyFile) {
-		LoadAccount(os.Getenv("key_file"))
-	} else {
-		CreateAccount(os.Getenv("key_file"))
-	}
-
-	// LoadDataToTEE(os.Getenv("key_file"), os.Getenv("channel_file"))
+//	LoadPeerInformation(os.Getenv("peer_file_directory"))
+//	CreateAccount()
+	LoadDataToTEE(os.Getenv("key_file"), os.Getenv("channel_file"))
 
 	go service.ListenContractEvent()
 	go startGrpcServer()
@@ -97,39 +91,15 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-func CreateAccount(directory string) {
+func CreateAccount() {
+	defaultDirectory := "./data/key/k2"
 	var kf *C.char
-	kf = C.CString(directory)
+	kf = C.CString(defaultDirectory)
 
 	C.ecall_create_account_w()
 	C.ecall_store_account_data_w(kf)
 	defer C.free(unsafe.Pointer(kf))
 
-	var paddrs unsafe.Pointer
-
-	paddrs = C.ecall_get_public_addrs_w()
-	paddrSize := 20
-	paddrSlice := (*[1 << 30]C.address)(unsafe.Pointer(paddrs))[:paddrSize:paddrSize]
-
-	var convertedAddress string
-	convertedAddress = fmt.Sprintf("%02x", paddrSlice[0].addr)
-	convertedAddress = "0x" + convertedAddress
-	fmt.Println("---- Public Key Address ---")
-	fmt.Println(convertedAddress)
-	config.SetAccountConfig(convertedAddress)
-}
-
-func LoadChannelData(channelFile string) {
-	cf := C.CString(channelFile)
-
-	C.ecall_load_channel_data_w(cf)
-	defer C.free(unsafe.Pointer(cf))
-}
-
-func LoadAccount(keyFile string) {
-	kf := C.CString(keyFile)
-	C.ecall_load_account_data_w(kf)
-	defer C.free(unsafe.Pointer(kf))
 	var paddrs unsafe.Pointer
 
 	paddrs = C.ecall_get_public_addrs_w()
@@ -170,12 +140,4 @@ func LoadDataToTEE(keyFile string, channelFile string) {
 
 func LoadPeerInformation(directory string) {
 	util.SetPeerInformation(directory)
-}
-
-func fileExists(filename string) bool {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return !info.IsDir()
 }

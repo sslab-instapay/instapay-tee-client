@@ -8,34 +8,35 @@ package service
 */
 import "C"
 import (
-	"log"
-	"math/big"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
-	instapay "github.com/sslab-instapay/instapay-tee-client/contracts"
-	serverPb "github.com/sslab-instapay/instapay-tee-client/proto/server"
-	"github.com/sslab-instapay/instapay-tee-client/config"
 	"context"
-	"fmt"
-	"github.com/sslab-instapay/instapay-tee-client/model"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"strings"
-	"math"
-	"google.golang.org/grpc"
-	"time"
-	"reflect"
-	"unsafe"
 	"encoding/hex"
-	"github.com/ethereum/go-ethereum/rlp"
+	"fmt"
+	"log"
+	"math"
+	"math/big"
 	"os"
+	"reflect"
+	"strings"
+	"time"
+	"unsafe"
+
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/sslab-instapay/instapay-tee-client/config"
+	instapay "github.com/sslab-instapay/instapay-tee-client/contracts"
+	"github.com/sslab-instapay/instapay-tee-client/model"
+	serverPb "github.com/sslab-instapay/instapay-tee-client/proto/server"
+	"google.golang.org/grpc"
 )
 
 func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error) {
 
 	client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
-	if err != nil{
+	if err != nil {
 		log.Println(err)
 	}
 
@@ -62,11 +63,29 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	rawTxBytes, err := hex.DecodeString(convertedRawTx)
 	tx := new(types.Transaction)
 	rlp.DecodeBytes(rawTxBytes, &tx)
-	client.SendTransaction(context.Background(), tx)
+	rawTxHex := hex.EncodeToString(rawTxBytes)
+	fmt.Println(rawTxHex)
+	fmt.Printf("Chain Id : %d\n", tx.ChainId())
+	fmt.Printf("Gas : %d\n", tx.Gas())
+	fmt.Printf("Value : %d\n", tx.Value())
+	fmt.Printf("To : %d\n", tx.To().Hex())
+	fmt.Printf("Gas : %d\n", tx.Cost())
+	fmt.Printf("Gas Price: %d\n", tx.GasPrice())
+	msg, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId()))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Sender : ", msg.From().Hex())
+	err = client.SendTransaction(context.Background(), tx)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(tx.Hash().Hex())
 
 	defer C.free(unsafe.Pointer(sig))
 
-	return "", nil
+	return tx.Hash().Hex(), nil
 }
 
 func SendCloseChannelTransaction(channelId int64) {
@@ -163,7 +182,7 @@ func ListenContractEvent() {
 	}
 }
 
-func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
+func HandleCreateChannelEvent(event model.CreateChannelEvent) error {
 
 	account := config.GetAccountConfig()
 	log.Println("----- Handle Create Channel Event ----")
@@ -184,7 +203,7 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
 	}
 
-	connection, err := grpc.Dial(config.EthereumConfig["serverGrpcHost"] + ":" + config.EthereumConfig["serverGrpcPort"], grpc.WithInsecure())
+	connection, err := grpc.Dial(config.EthereumConfig["serverGrpcHost"]+":"+config.EthereumConfig["serverGrpcPort"], grpc.WithInsecure())
 	if err != nil {
 		log.Println("GRPC Connection Error")
 		log.Println(err)
@@ -197,9 +216,9 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 	defer cancel()
 
 	var otherAddress string
-	if event.Receiver.String() == config.GetAccountConfig().PublicKeyAddress{
+	if event.Receiver.String() == config.GetAccountConfig().PublicKeyAddress {
 		otherAddress = event.Owner.String()
-	}else {
+	} else {
 		otherAddress = event.Receiver.String()
 	}
 
@@ -213,7 +232,7 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error{
 	var defaultDirectory string
 	if os.Getenv("channel_file") == "" {
 		defaultDirectory = "./data/channel/c0"
-	}else{
+	} else {
 		defaultDirectory = os.Getenv("channel_file")
 	}
 
@@ -237,7 +256,7 @@ func HandleCloseChannelEvent(event model.CloseChannelEvent) {
 	var defaultDirectory string
 	if os.Getenv("channel_file") == "" {
 		defaultDirectory = "./data/channel/c0"
-	}else{
+	} else {
 		defaultDirectory = os.Getenv("channel_file")
 	}
 

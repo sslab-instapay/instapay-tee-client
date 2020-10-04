@@ -44,14 +44,9 @@ func main() {
 	os.Setenv("key_file", *keyFile)
 	os.Setenv("channel_file", *channelFile)
 
-	LoadPeerInformation(os.Getenv("peer_file_directory"))
-	// CreateAccount(os.Getenv("peer_file_directory"))
-	if fileExists(*keyFile) {
-		LoadAccount(os.Getenv("key_file"))
-	} else {
-		CreateAccount(os.Getenv("key_file"))
-	}
-
+	// LoadPeerInformation(os.Getenv("peer_file_directory"))
+	CreateAccount(os.Getenv("key_file"))
+	LoadAccount(os.Getenv("key_file"))
 	// LoadDataToTEE(os.Getenv("key_file"), os.Getenv("channel_file"))
 
 	go service.ListenContractEvent()
@@ -170,12 +165,4 @@ func LoadDataToTEE(keyFile string, channelFile string) {
 
 func LoadPeerInformation(directory string) {
 	util.SetPeerInformation(directory)
-}
-
-func fileExists(filename string) bool {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	}
-	return !info.IsDir()
 }

@@ -1,18 +1,19 @@
 package main
 
 import (
-	"github.com/ethereum/go-ethereum/ethclient"
-	"log"
-	instapayContract "github.com/sslab-instapay/instapay-tee-client/contracts"
-	"math/big"
-	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
-	"crypto/ecdsa"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"context"
+	"crypto/ecdsa"
+	"fmt"
+	"log"
+	"math/big"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
+	instapayContract "github.com/sslab-instapay/instapay-tee-client/contracts"
 )
 
-func main(){
+func main() {
 	client, err := ethclient.Dial("ws://141.223.121.139:8881")
 	if err != nil {
 		log.Fatal(err)
@@ -37,13 +38,13 @@ func main(){
 	}
 	auth := bind.NewKeyedTransactor(privateKey)
 	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0) // in wei
+	auth.Value = big.NewInt(0)     // in wei
 	auth.GasLimit = uint64(300000) // in units
 	auth.GasPrice = gasPrice
 
-	contract, _ := instapayContract.NewInstapay(fromAddress, nil)
+	contract, _, _, _ := instapayContract.DeployInstapay(auth, client)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(contract)
+	fmt.Println(contract.Hex())
 }

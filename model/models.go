@@ -2,6 +2,7 @@ package model
 
 import (
 	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -12,9 +13,9 @@ type Account struct {
 
 type AccountDTO struct {
 	PublicKeyAddress string `json:"address"`
-	Balance          int  `json:"balance"`
-	OffChainDeposit  int  `json:"offchainDeposit"`
-	OffChainBalance  int  `json:"offchainBalance"`
+	Balance          int    `json:"balance"`
+	OffChainDeposit  int    `json:"offchainDeposit"`
+	OffChainBalance  int    `json:"offchainBalance"`
 }
 
 type ChannelStatus string
@@ -46,31 +47,31 @@ type Channel struct {
 	Type          ChannelType   `bson:"channelType" json:"channelType"`
 	Status        ChannelStatus `bson:"channelStatus" json:"channelStatus"`
 	MyAddress     string        `bson:"myAddress" json:"myAddress"`
-	MyDeposit     int         `bson:"myDeposit" json:"myDeposit"`
-	OtherDeposit  int         `bson:"otherDeposit" json:"otherDeposit"`
-	MyBalance     int         `bson:"myBalance" json:"myBalance"`
-	LockedBalance int         `bson:"lockedBalance" json:"lockedBalance"`
+	MyDeposit     int           `bson:"myDeposit" json:"myDeposit"`
+	OtherDeposit  int           `bson:"otherDeposit" json:"otherDeposit"`
+	MyBalance     int           `bson:"myBalance" json:"myBalance"`
+	LockedBalance int           `bson:"lockedBalance" json:"lockedBalance"`
 	OtherAddress  string        `bson:"otherAddress" json:"otherAddress"`
 	OtherIp       string        `bson:"otherIp" json:"otherIp"`
 	OtherPort     int           `bson:"otherPort" json:"otherPort"`
 }
 
 type CreateChannelEvent struct {
-	Id       int64
+	Id       *big.Int
 	Owner    common.Address
 	Receiver common.Address
-	Deposit  int64
+	Deposit  *big.Int
 }
 
 type CloseChannelEvent struct {
-	Id          int64
-	Ownerbal    int64
-	Receiverbal int64
+	Id          *big.Int
+	Ownerbal    *big.Int
+	Receiverbal *big.Int
 }
 
 type EjectEvent struct {
-	Pn              int64
-	Registeredstage int
+	Pn              *big.Int
+	Registeredstage *big.Int
 }
 
 type PeerInformations struct {
