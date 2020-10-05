@@ -161,6 +161,7 @@ func ListenContractEvent() {
 				fmt.Printf("Channel Receiver : %s\n", createChannelEvent.Receiver.Hex())
 				fmt.Printf("Channel Deposit  : %d\n", createChannelEvent.Deposit)
 				HandleCreateChannelEvent(createChannelEvent)
+				continue
 			}
 
 			err = contractAbi.Unpack(&closeChannelEvent, "EventCloseChannel", vLog.Data)
@@ -170,12 +171,14 @@ func ListenContractEvent() {
 				fmt.Printf("Owner Balance    : %d\n", closeChannelEvent.Ownerbal)
 				fmt.Printf("Receiver Balance : %d\n", closeChannelEvent.Receiverbal)
 				HandleCloseChannelEvent(closeChannelEvent)
+				continue
 			}
 
 			err = contractAbi.Unpack(&ejectEvent, "EventEject", vLog.Data)
 			if err == nil {
 				fmt.Printf("Payment Number   : %d\n", ejectEvent.Pn)
 				fmt.Printf("Stage            : %d\n", ejectEvent.Registeredstage)
+				continue
 			}
 
 		}
@@ -189,17 +192,17 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error {
 
 	if event.Receiver.String() == config.GetAccountConfig().PublicKeyAddress {
 		// CASE IN CHANNEL
-		channelId := C.uint(uint32(event.Id))
+		channelId := C.uint(uint32(event.Id.Int64()))
 		owner := []C.uchar(account.PublicKeyAddress[2:])
 		sender := []C.uchar(event.Receiver.Hex()[2:])
-		deposit := C.uint(uint32(event.Deposit))
+		deposit := C.uint(uint32(event.Deposit.Int64()))
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
 	} else if event.Owner.String() == config.GetAccountConfig().PublicKeyAddress {
 		// CASE OUT CHANNEL
-		channelId := C.uint(uint32(event.Id))
+		channelId := C.uint(uint32(event.Id.Int64()))
 		owner := []C.uchar(event.Receiver.Hex()[2:])
 		sender := []C.uchar(account.PublicKeyAddress[2:])
-		deposit := C.uint(uint32(event.Deposit))
+		deposit := C.uint(uint32(event.Deposit.Int64()))
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
 	}
 
@@ -246,9 +249,9 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error {
 func HandleCloseChannelEvent(event model.CloseChannelEvent) {
 
 	log.Println("----- Handle Close Channel Event -----")
-	channelId := C.uint(uint32(event.Id))
-	ownerBal := C.uint(uint32(event.Ownerbal))
-	receiverBal := C.uint(uint32(event.Receiverbal))
+	channelId := C.uint(uint32(event.Id.Int64()))
+	ownerBal := C.uint(uint32(event.Ownerbal.Int64()))
+	receiverBal := C.uint(uint32(event.Receiverbal.Int64()))
 
 	log.Println("----- Start Close Channel Event -----")
 	C.ecall_receive_close_channel_w(channelId, ownerBal, receiverBal)

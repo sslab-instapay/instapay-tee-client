@@ -9,22 +9,24 @@ package controller
 import "C"
 
 import (
-	"net/http"
-	"github.com/gin-gonic/gin"
-	"github.com/sslab-instapay/instapay-tee-client/repository"
-	"log"
-	"strconv"
-	"github.com/sslab-instapay/instapay-tee-client/service"
-	"github.com/sslab-instapay/instapay-tee-client/config"
-	serverPb "github.com/sslab-instapay/instapay-tee-client/proto/server"
-	"google.golang.org/grpc"
-	"time"
 	"context"
+	"fmt"
+	"log"
+	"net/http"
+	"reflect"
+	"strconv"
+	"time"
+	"unsafe"
+
+	"github.com/gin-gonic/gin"
+	"github.com/sslab-instapay/instapay-tee-client/config"
 	"github.com/sslab-instapay/instapay-tee-client/model"
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
+	serverPb "github.com/sslab-instapay/instapay-tee-client/proto/server"
+	"github.com/sslab-instapay/instapay-tee-client/repository"
+	"github.com/sslab-instapay/instapay-tee-client/service"
 	"github.com/sslab-instapay/instapay-tee-client/util"
-	"unsafe"
-	"reflect"
+	"google.golang.org/grpc"
 )
 
 var ExecutionTime time.Time
@@ -33,6 +35,7 @@ func OpenChannelHandler(ctx *gin.Context) {
 
 	otherAddress := ctx.PostForm("other_addr")
 	deposit, _ := strconv.Atoi(ctx.PostForm("deposit"))
+	fmt.Println(otherAddress)
 
 	txHash, err := service.SendOpenChannelTransaction(deposit, otherAddress)
 	if err != nil {
@@ -53,7 +56,7 @@ func CloseChannelHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Channel"})
 }
 
-func EjectChannelHandler(ctx *gin.Context){
+func EjectChannelHandler(ctx *gin.Context) {
 
 }
 
@@ -67,27 +70,27 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 	amountParam := ctx.PostForm("amount")
 
 	channelId, err := strconv.Atoi(channelIdParam)
-	if err != nil{
+	if err != nil {
 		log.Println(err)
 	}
 
 	amount, err := strconv.Atoi(amountParam)
-	if err != nil{
+	if err != nil {
 		log.Println(err)
 	}
 
 	channel, err := repository.GetChannelById(channelId)
-	if err != nil{
+	if err != nil {
 		log.Println(err)
 	}
 
-	peerInformation, _,err := util.GetPeerInformationByAddress(channel.OtherAddress)
+	peerInformation, _, err := util.GetPeerInformationByAddress(channel.OtherAddress)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"success": false})
 		return
 	}
 
-	conn, err := grpc.Dial(peerInformation.IpAddress + ":" + strconv.Itoa(peerInformation.GrpcPort), grpc.WithInsecure())
+	conn, err := grpc.Dial(peerInformation.IpAddress+":"+strconv.Itoa(peerInformation.GrpcPort), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -113,7 +116,7 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 		C.ecall_pay_accepted_w(originalMessagePointer, signaturePointer)
 		log.Println("----- payment accept w end -----")
 		ctx.JSON(http.StatusOK, gin.H{"success": r.Result})
-	}else{
+	} else {
 		ctx.JSON(http.StatusBadRequest, gin.H{"success": r.Result})
 	}
 }
@@ -214,16 +217,16 @@ func GetWalletInformationHandler(ctx *gin.Context) {
 
 }
 
-func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar){
+func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar) {
 
 	var uOriginal [44]C.uchar
 	var uSignature [65]C.uchar
 
-	for i := 0; i < 44; i++{
+	for i := 0; i < 44; i++ {
 		uOriginal[i] = C.uchar(originalMsg[i])
 	}
 
-	for i := 0; i < 65; i++{
+	for i := 0; i < 65; i++ {
 		uSignature[i] = C.uchar(signature[i])
 	}
 
@@ -233,30 +236,30 @@ func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uc
 	return cOriginalMsg, cSignature
 }
 
-func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar)([]byte, []byte){
+func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []byte) {
 
 	var returnMsg []byte
 	var returnSignature []byte
 
 	replyMsgHdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(originalMsg)),
-		Len: int(44),
-		Cap: int(44),
+		Len:  int(44),
+		Cap:  int(44),
 	}
 	replyMsgS := *(*[]C.uchar)(unsafe.Pointer(&replyMsgHdr))
 
 	replySigHdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(signature)),
-		Len: int(65),
-		Cap: int(65),
+		Len:  int(65),
+		Cap:  int(65),
 	}
 	replySigS := *(*[]C.uchar)(unsafe.Pointer(&replySigHdr))
 
-	for i := 0; i < 44; i++{
+	for i := 0; i < 44; i++ {
 		returnMsg = append(returnMsg, byte(replyMsgS[i]))
 	}
 
-	for i := 0; i < 65; i++{
+	for i := 0; i < 65; i++ {
 		returnSignature = append(returnSignature, byte(replySigS[i]))
 	}
 
