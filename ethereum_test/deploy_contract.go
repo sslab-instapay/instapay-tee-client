@@ -10,7 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	instapayContract "github.com/sslab-instapay/instapay-tee-client/contracts"
+	instapay "github.com/sslab-instapay/instapay-tee-client/contracts"
 )
 
 func main() {
@@ -28,6 +28,7 @@ func main() {
 		log.Fatal("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
 	}
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	fmt.Println(fromAddress.Hex())
 	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
 		log.Fatal(err)
@@ -38,13 +39,14 @@ func main() {
 	}
 	auth := bind.NewKeyedTransactor(privateKey)
 	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)     // in wei
-	auth.GasLimit = uint64(300000) // in units
+	auth.Value = big.NewInt(0)      // in wei
+	auth.GasLimit = uint64(3000000) // in units
 	auth.GasPrice = gasPrice
 
-	contract, _, _, _ := instapayContract.DeployInstapay(auth, client)
+	contract, _, _, err := instapay.DeployInstapay(auth, client)
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(contract.Hex())
+
 }

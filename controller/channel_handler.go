@@ -92,7 +92,7 @@ func DirectPayChannelHandler(ctx *gin.Context) {
 
 	conn, err := grpc.Dial(peerInformation.IpAddress+":"+strconv.Itoa(peerInformation.GrpcPort), grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		log.Println("did not connect: %v", err)
 	}
 	// pay_w 실행 후 상대에게 요청
 	var originalMessage *C.uchar

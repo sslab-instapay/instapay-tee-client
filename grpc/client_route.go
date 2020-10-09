@@ -10,20 +10,22 @@ import "C"
 
 import (
 	"context"
+
 	clientPb "github.com/sslab-instapay/instapay-tee-client/proto/client"
+
 	// "github.com/sslab-instapay/instapay-tee-client/controller"
 	"log"
 	// "fmt"
 	// "time"
-	"unsafe"
 	"reflect"
+	"unsafe"
 )
 
 type ClientGrpc struct {
 }
 
 func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeRequestsMessage) (*clientPb.AgreementResult, error) {
-
+	log.Println("----REceive Aggreement Request----")
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar
@@ -37,6 +39,7 @@ func (s *ClientGrpc) AgreementRequest(ctx context.Context, in *clientPb.AgreeReq
 
 func (s *ClientGrpc) UpdateRequest(ctx context.Context, in *clientPb.UpdateRequestsMessage) (*clientPb.UpdateResult, error) {
 	// 채널 정보를 업데이트 한다던지 잔액을 변경.
+	log.Println("----REceive Update Request----")
 	convertedOriginalMsg, convertedSignatureMsg := convertByteToPointer(in.OriginalMessage, in.Signature)
 
 	var originalMsg *C.uchar
@@ -82,16 +85,16 @@ func (s *ClientGrpc) DirectChannelPayment(ctx context.Context, in *clientPb.Dire
 	return &clientPb.DirectPaymentResult{Result: true, ReplyMessage: convertedReplyMessage, ReplySignature: convertedReplySignature}, nil
 }
 
-func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar){
+func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uchar) {
 
 	var uOriginal [44]C.uchar
 	var uSignature [65]C.uchar
 
-	for i := 0; i < 44; i++{
+	for i := 0; i < 44; i++ {
 		uOriginal[i] = C.uchar(originalMsg[i])
 	}
 
-	for i := 0; i < 65; i++{
+	for i := 0; i < 65; i++ {
 		uSignature[i] = C.uchar(signature[i])
 	}
 
@@ -101,30 +104,30 @@ func convertByteToPointer(originalMsg []byte, signature []byte) (*C.uchar, *C.uc
 	return cOriginalMsg, cSignature
 }
 
-func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar)([]byte, []byte){
+func convertPointerToByte(originalMsg *C.uchar, signature *C.uchar) ([]byte, []byte) {
 
 	var returnMsg []byte
 	var returnSignature []byte
 
 	replyMsgHdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(originalMsg)),
-		Len: int(44),
-		Cap: int(44),
+		Len:  int(44),
+		Cap:  int(44),
 	}
 	replyMsgS := *(*[]C.uchar)(unsafe.Pointer(&replyMsgHdr))
 
 	replySigHdr := reflect.SliceHeader{
 		Data: uintptr(unsafe.Pointer(signature)),
-		Len: int(65),
-		Cap: int(65),
+		Len:  int(65),
+		Cap:  int(65),
 	}
 	replySigS := *(*[]C.uchar)(unsafe.Pointer(&replySigHdr))
 
-	for i := 0; i < 44; i++{
+	for i := 0; i < 44; i++ {
 		returnMsg = append(returnMsg, byte(replyMsgS[i]))
 	}
 
-	for i := 0; i < 65; i++{
+	for i := 0; i < 65; i++ {
 		returnSignature = append(returnSignature, byte(replySigS[i]))
 	}
 

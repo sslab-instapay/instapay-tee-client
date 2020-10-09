@@ -59,6 +59,10 @@ func main() {
 		CreateAccount(os.Getenv("key_file"))
 	}
 
+	if fileExists(*channelFile) {
+		LoadChannelData(*channelFile)
+	}
+
 	// LoadDataToTEE(os.Getenv("key_file"), os.Getenv("channel_file"))
 
 	go service.ListenContractEvent()
@@ -189,6 +193,7 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
+// 임시로 이더를 전송해줌.
 func sendEther(hexAddress string) {
 	client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
 	if err != nil {

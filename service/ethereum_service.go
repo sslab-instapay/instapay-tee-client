@@ -63,14 +63,11 @@ func SendOpenChannelTransaction(deposit int, otherAddress string) (string, error
 	rawTxBytes, err := hex.DecodeString(convertedRawTx)
 	tx := new(types.Transaction)
 	rlp.DecodeBytes(rawTxBytes, &tx)
-	rawTxHex := hex.EncodeToString(rawTxBytes)
-	fmt.Println(rawTxHex)
-	fmt.Printf("Chain Id : %d\n", tx.ChainId())
-	fmt.Printf("Gas : %d\n", tx.Gas())
-	fmt.Printf("Value : %d\n", tx.Value())
-	fmt.Printf("To : %d\n", tx.To().Hex())
-	fmt.Printf("Gas : %d\n", tx.Cost())
-	fmt.Printf("Gas Price: %d\n", tx.GasPrice())
+	// rawTxHex := hex.EncodeToString(rawTxBytes)
+	for i := 0; i < len(tx.Data()); i++ {
+		fmt.Printf("%02x", tx.Data()[i])
+	}
+	fmt.Println()
 	msg, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId()))
 	if err != nil {
 		log.Fatal(err)
@@ -190,19 +187,21 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error {
 	account := config.GetAccountConfig()
 	log.Println("----- Handle Create Channel Event ----")
 
-	if event.Receiver.String() == config.GetAccountConfig().PublicKeyAddress {
+	if strings.ToLower(event.Receiver.String()) == config.GetAccountConfig().PublicKeyAddress {
 		// CASE IN CHANNEL
 		channelId := C.uint(uint32(event.Id.Int64()))
 		owner := []C.uchar(account.PublicKeyAddress[2:])
-		sender := []C.uchar(event.Receiver.Hex()[2:])
+		sender := []C.uchar(event.Owner.Hex()[2:])
 		deposit := C.uint(uint32(event.Deposit.Int64()))
+		fmt.Println("RECEIVE CREATE CHANNEL")
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
-	} else if event.Owner.String() == config.GetAccountConfig().PublicKeyAddress {
+	} else if strings.ToLower(event.Owner.String()) == config.GetAccountConfig().PublicKeyAddress {
 		// CASE OUT CHANNEL
 		channelId := C.uint(uint32(event.Id.Int64()))
 		owner := []C.uchar(event.Receiver.Hex()[2:])
 		sender := []C.uchar(account.PublicKeyAddress[2:])
 		deposit := C.uint(uint32(event.Deposit.Int64()))
+		fmt.Println("RECEIVE CREATE CHANNEL")
 		C.ecall_receive_create_channel_w(channelId, &sender[0], &owner[0], deposit)
 	}
 
@@ -210,7 +209,6 @@ func HandleCreateChannelEvent(event model.CreateChannelEvent) error {
 	if err != nil {
 		log.Println("GRPC Connection Error")
 		log.Println(err)
-		return err
 	}
 	defer connection.Close()
 	client := serverPb.NewServerClient(connection)
